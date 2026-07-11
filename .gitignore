@@ -1,0 +1,11 @@
+# Entornos virtuales
+venv/
+env/
+
+# Archivos de caché de Python
+__pycache__/
+*.pyc
+
+# Variables de entorno y credenciales (¡SÚPER IMPORTANTE!)
+.env
+firebase_credenciales.json
