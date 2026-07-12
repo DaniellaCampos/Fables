@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import { AppProvider } from './context/AppContext';
 import App from './App';
+import './styles/tailwind.css';
 import './styles.css';
 import './styles/fixed-design-canvas.css';
 import './styles/category-bottom-bar.css';

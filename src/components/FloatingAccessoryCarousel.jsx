@@ -45,7 +45,7 @@ export default function FloatingAccessoryCarousel({
     setStartX(null);
   };
 
-  const handlePointerMove = (e) => {
+  const handlePointerMove = () => {
     if (startX === null) return;
     // Optional: Add visual feedback for drag
   };

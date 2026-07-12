@@ -1,17 +1,21 @@
-from fastapi import Depends, HTTPException, Header
+import os
+
+from fastapi import HTTPException, Header
 from firebase_admin import auth
 
+DEV_MODE = os.getenv("DEV_MODE", "false").lower() == "true"
+
 # Esta función verifica que el Token que envía React sea real
-def verificar_token(authorization: str = Header(...)):
-    if not authorization.startswith("Bearer "):
+def verificar_token(authorization: str = Header(default=None)):
+    # Bypass de autenticación solo para desarrollo local (DEV_MODE=true en .env)
+    if DEV_MODE:
+        return {"uid": "test_local_user", "email": "dev@local.test"}
+
+    if not authorization or not authorization.startswith("Bearer "):
         raise HTTPException(status_code=401, detail="Token inválido")
-    
+
     token = authorization.split("Bearer ")[1]
-    
-    # Soporte para tokens simulados en pruebas locales
-    if token == "mock-token-jwt-secret-key-123":
-        return {"uid": "mock-user-12345", "email": "juan.perez@example.com"}
-    
+
     try:
         # Firebase verifica si el usuario es legítimo
         decoded_token = auth.verify_id_token(token)

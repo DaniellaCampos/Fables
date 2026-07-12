@@ -10,4 +10,6 @@ import Preview from './pages/Preview';
 import Brand from './pages/Brand';
 import Designs from './pages/Designs';
 import NotFound from './pages/NotFound';
-export default function App(){return <Routes><Route path="/" element={<Navigate to="/login" replace/>}/><Route path="/login" element={<Login/>}/><Route path="/onboarding" element={<Onboarding/>}/><Route element={<AppLayout/>}><Route path="/dashboard" element={<Dashboard/>}/><Route path="/create" element={<Create/>}/><Route path="/create/upload" element={<Upload/>}/><Route path="/create/closet" element={<Closet/>}/><Route path="/create/preview" element={<Preview/>}/><Route path="/brand" element={<Brand/>}/><Route path="/designs" element={<Designs/>}/><Route path="*" element={<NotFound/>}/></Route></Routes>}
+import Styleguide from './pages/Styleguide';
+import MiMarca from './pages/MiMarca';
+export default function App(){return <Routes><Route path="/" element={<Navigate to="/login" replace/>}/><Route path="/login" element={<Login/>}/><Route path="/onboarding" element={<Onboarding/>}/><Route path="/styleguide" element={<Styleguide/>}/><Route path="/mi-marca" element={<MiMarca/>}/><Route element={<AppLayout/>}><Route path="/dashboard" element={<Dashboard/>}/><Route path="/create" element={<Create/>}/><Route path="/create/upload" element={<Upload/>}/><Route path="/create/closet" element={<Closet/>}/><Route path="/create/preview" element={<Preview/>}/><Route path="/brand" element={<Brand/>}/><Route path="/designs" element={<Designs/>}/><Route path="*" element={<NotFound/>}/></Route></Routes>}

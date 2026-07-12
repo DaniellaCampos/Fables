@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, Check, Sparkles } from 'lucide-react';
-import { audiences, brandStyles } from '../mocks/data';
+import { archetypes, audiences, brandStyles, targetEmotions } from '../mocks/data';
 import { useApp } from '../context/AppContext';
 import { Badge, Button, ChoiceGrid, Field, SelectField } from '../components/ui';
 import { saveOnboarding } from '../services/api';
 
-const steps = ['Tu negocio', 'Tu público', 'Tu estilo', 'Confirmación'];
+const steps = ['Tu negocio', 'Tu público', 'Tu estilo', 'Tu personalidad', 'Confirmación'];
 
 export default function Onboarding() {
   const { brand, updateBrand } = useApp();
@@ -31,7 +31,17 @@ export default function Onboarding() {
       setErrors(e);
       if (Object.keys(e).length) return;
     }
-    setStep(s => Math.min(3, s + 1));
+    if (step === 3) {
+      const e = {};
+      if (!data.arquetipo_marca) e.arquetipo_marca = 'Elige la personalidad que mejor describe tu marca.';
+      if (!data.proposito_marca.trim()) e.proposito_marca = 'Cuéntanos por qué existe tu negocio.';
+      if (!data.enemigo_marca.trim()) e.enemigo_marca = 'Indica contra qué se posiciona tu marca.';
+      if (!data.tono_voz) e.tono_voz = 'Elige un tono de voz.';
+      if (!data.emocion_objetivo) e.emocion_objetivo = 'Elige la emoción que quieres generar.';
+      setErrors(e);
+      if (Object.keys(e).length) return;
+    }
+    setStep(s => Math.min(4, s + 1));
   };
 
   const save = async () => {
@@ -73,7 +83,7 @@ export default function Onboarding() {
 
       <div className="onboarding-grid">
         <section className="onboarding-form">
-          <Badge>PASO {step + 1} DE 4</Badge>
+          <Badge>PASO {step + 1} DE 5</Badge>
           
           {step === 0 && (
             <>
@@ -177,6 +187,74 @@ export default function Onboarding() {
 
           {step === 3 && (
             <>
+              <h1>La psicología de tu marca</h1>
+              <p>Estas respuestas le dan personalidad real a los textos que genera la IA.</p>
+
+              <label className="field full" style={{ marginTop: 28 }}>
+                <span>Si tu marca fuera una persona en una fiesta, ¿cómo se comporta? *</span>
+              </label>
+              <div className="choice-grid">
+                {archetypes.map(a => {
+                  const active = data.arquetipo_marca === a.key;
+                  return (
+                    <button
+                      type="button"
+                      key={a.key}
+                      className={`choice ${active ? 'active' : ''}`}
+                      aria-pressed={active}
+                      onClick={() => set('arquetipo_marca', a.key)}
+                    >
+                      <span className="choice-mark">{active ? '✓' : '+'}</span>
+                      {a.label}
+                    </button>
+                  );
+                })}
+              </div>
+              {errors.arquetipo_marca && <small className="error">{errors.arquetipo_marca}</small>}
+
+              <div className="form-grid" style={{ marginTop: 28 }}>
+                <label className="field full">
+                  <span>En una frase: ¿por qué existe tu negocio, más allá de ganar dinero? *</span>
+                  <textarea
+                    value={data.proposito_marca}
+                    onChange={e => set('proposito_marca', e.target.value)}
+                    rows="2"
+                    maxLength="180"
+                  />
+                  {errors.proposito_marca && <small className="error">{errors.proposito_marca}</small>}
+                </label>
+                <Field
+                  label="¿Contra qué se rebela tu marca? *"
+                  value={data.enemigo_marca}
+                  onChange={e => set('enemigo_marca', e.target.value)}
+                  error={errors.enemigo_marca}
+                  placeholder="Ej: el servicio frío de las cadenas grandes"
+                />
+                <SelectField
+                  label="¿Tu marca suena más...? *"
+                  value={data.tono_voz}
+                  onChange={e => set('tono_voz', e.target.value)}
+                >
+                  <option value="">Selecciona una opción</option>
+                  <option value="Formal">Formal y elegante</option>
+                  <option value="Cercano">Cercana y relajada</option>
+                </SelectField>
+                {errors.tono_voz && <small className="error">{errors.tono_voz}</small>}
+                <SelectField
+                  label="3 segundos después de ver tu post, ¿qué sientes el cliente? *"
+                  value={data.emocion_objetivo}
+                  onChange={e => set('emocion_objetivo', e.target.value)}
+                >
+                  <option value="">Selecciona una opción</option>
+                  {targetEmotions.map(em => <option key={em}>{em}</option>)}
+                </SelectField>
+                {errors.emocion_objetivo && <small className="error">{errors.emocion_objetivo}</small>}
+              </div>
+            </>
+          )}
+
+          {step === 4 && (
+            <>
               <h1>Así se siente tu marca</h1>
               <p>Revisa el resumen. Todo esto se puede editar después desde “Mi marca”.</p>
               <div className="summary-list">
@@ -190,14 +268,30 @@ export default function Onboarding() {
                   <b>{data.audiences.join(' · ') || 'Sin seleccionar'}</b>
                 </div>
                 <div>
-                  <span>Personalidad</span>
+                  <span>Estilo</span>
                   <b>{data.styles.join(' · ') || 'Sin seleccionar'}</b>
                 </div>
                 <div>
                   <span>Colores</span>
                   <i style={{ background: data.primary }} />
-                  <i style={{ background: data.secondary }} /> 
+                  <i style={{ background: data.secondary }} />
                   <b>{data.language}</b>
+                </div>
+                <div>
+                  <span>Arquetipo de marca</span>
+                  <b>{archetypes.find(a => a.key === data.arquetipo_marca)?.label || 'Sin seleccionar'}</b>
+                </div>
+                <div>
+                  <span>Propósito</span>
+                  <b>{data.proposito_marca || 'Sin definir'}</b>
+                </div>
+                <div>
+                  <span>Se posiciona contra</span>
+                  <b>{data.enemigo_marca || 'Sin definir'}</b>
+                </div>
+                <div>
+                  <span>Tono y emoción objetivo</span>
+                  <b>{data.tono_voz || 'Sin definir'} · {data.emocion_objetivo || 'Sin definir'}</b>
                 </div>
               </div>
             </>
@@ -228,7 +322,7 @@ export default function Onboarding() {
           <ArrowLeft />
           {step ? 'Atrás' : 'Volver'}
         </Button>
-        {step < 3 ? (
+        {step < 4 ? (
           <Button onClick={next}>
             Continuar
             <ArrowRight />

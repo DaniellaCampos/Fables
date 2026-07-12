@@ -1,0 +1,18 @@
+[
+  { "date": "2026-01-01", "name": "Año Nuevo", "type": "holiday" },
+  { "date": "2026-04-02", "name": "Jueves Santo", "type": "holiday" },
+  { "date": "2026-04-03", "name": "Viernes Santo", "type": "holiday" },
+  { "date": "2026-04-04", "name": "Sábado Santo", "type": "holiday" },
+  { "date": "2026-04-05", "name": "Domingo de Resurrección", "type": "festividad" },
+  { "date": "2026-05-01", "name": "Día del Trabajo", "type": "holiday" },
+  { "date": "2026-05-10", "name": "Día de la Madre", "type": "festividad" },
+  { "date": "2026-06-17", "name": "Día del Padre", "type": "festividad" },
+  { "date": "2026-08-03", "name": "Fiestas Agostinas (Bajada)", "type": "holiday" },
+  { "date": "2026-08-04", "name": "Fiestas Agostinas (El Salvador del Mundo)", "type": "holiday" },
+  { "date": "2026-08-05", "name": "Fiestas Agostinas", "type": "holiday" },
+  { "date": "2026-08-06", "name": "Transfiguración", "type": "holiday" },
+  { "date": "2026-09-15", "name": "Día de la Independencia", "type": "holiday" },
+  { "date": "2026-11-02", "name": "Día de los Difuntos", "type": "festividad" },
+  { "date": "2026-12-25", "name": "Navidad", "type": "holiday" },
+  { "date": "2026-12-31", "name": "Fin de Año", "type": "holiday" }
+]

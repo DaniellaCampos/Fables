@@ -49,6 +49,7 @@ from api.schemas import OnboardingData, ClosetGenerateRequest
 from security import verificar_token
 from services.ai_service import generate_campaign_content
 from services.vision_service import get_images
+from services.forecast_service import get_forecast
 
 
 # ---------------------------------------------------------
@@ -63,11 +64,11 @@ def read_root():
 
 # RUTA 1: Guardar el ADN de la marca en Firestore
 @app.post("/api/onboarding")
-async def guardar_onboarding(datos: OnboardingData):  # TODO: restore `usuario: dict = Depends(verificar_token)` once a real frontend JWT is available
+async def guardar_onboarding(datos: OnboardingData, usuario: dict = Depends(verificar_token)):
     if db is None:
         raise HTTPException(status_code=500, detail="Servicio de base de datos no disponible")
 
-    uid = "test_local_user"  # TODO: replace with usuario["uid"] once auth is restored
+    uid = usuario["uid"]
     
     try:
         # Guardar en Firestore de forma asíncrona para no bloquear el event loop
@@ -79,13 +80,60 @@ async def guardar_onboarding(datos: OnboardingData):  # TODO: restore `usuario: 
         raise HTTPException(status_code=500, detail=f"Error al guardar en base de datos: {str(e)}")
 
 
-# RUTA 2: El Armario - Generación de campaña completa (IA + Imágenes)
-@app.post("/api/closet/generate")
-async def generar_contenido(peticion: ClosetGenerateRequest):  # TODO: restore `usuario: dict = Depends(verificar_token)` once a real frontend JWT is available
+# RUTA 1b: Leer el ADN de marca guardado en Firestore
+@app.get("/api/onboarding")
+async def obtener_onboarding(usuario: dict = Depends(verificar_token)):
     if db is None:
         raise HTTPException(status_code=500, detail="Servicio de base de datos no disponible")
 
-    usuario_id = "test_local_user"  # TODO: replace with peticion.usuario_id / usuario["uid"] once auth is restored
+    uid = usuario["uid"]
+
+    doc_ref = db.collection("usuarios").document(uid)
+    doc = await anyio.to_thread.run_sync(doc_ref.get)
+
+    if not doc.exists:
+        raise HTTPException(
+            status_code=404,
+            detail="Aún no completaste el onboarding. Completa tu ADN de marca primero."
+        )
+
+    return OnboardingData(**doc.to_dict())
+
+
+# RUTA 1c: Radar de oportunidades (clima + feriados/festividades + reglas simples)
+@app.get("/api/forecast")
+async def obtener_forecast(usuario: dict = Depends(verificar_token)):
+    if db is None:
+        raise HTTPException(status_code=500, detail="Servicio de base de datos no disponible")
+
+    uid = usuario["uid"]
+
+    doc_ref = db.collection("usuarios").document(uid)
+    doc = await anyio.to_thread.run_sync(doc_ref.get)
+
+    if not doc.exists:
+        raise HTTPException(
+            status_code=404,
+            detail="Aún no completaste el onboarding. Completa tu ADN de marca primero."
+        )
+
+    brand_adn = OnboardingData(**doc.to_dict())
+    opportunities = await get_forecast(location=brand_adn.ubicacion)
+
+    return {
+        "location": brand_adn.ubicacion,
+        "model_version": "rules_v1",
+        "opportunities": opportunities
+    }
+
+
+# RUTA 2: El Armario - Generación de campaña completa (IA + Imágenes)
+@app.post("/api/closet/generate")
+async def generar_contenido(peticion: ClosetGenerateRequest):
+    if db is None:
+        raise HTTPException(status_code=500, detail="Servicio de base de datos no disponible")
+
+    usuario_id = peticion.usuario_id
 
     try:
         # 1. Leer el documento del usuario en Firestore

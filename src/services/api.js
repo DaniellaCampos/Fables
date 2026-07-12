@@ -40,7 +40,9 @@ async function request(endpoint, options = {}) {
     
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.detail || `HTTP error! status: ${response.status}`);
+      const error = new Error(errorData.detail || `HTTP error! status: ${response.status}`);
+      error.status = response.status;
+      throw error;
     }
     
     return await response.json();
@@ -55,21 +57,53 @@ async function request(endpoint, options = {}) {
  * @param {Object} brandData Datos de onboarding recolectados
  */
 export async function saveOnboarding(brandData) {
-  // El backend espera: nicho_negocio, cliente_ideal, ubicacion, color_hex, vibra_marca
-  // El frontend recolecta: name, service, description, location, audiences, styles, primary, secondary
-  // Mapeamos los datos locales al esquema exacto del backend (OnboardingData)
+  // El backend espera el esquema completo de OnboardingData, incluyendo el
+  // "ADN psicologico" de marca (arquetipo, proposito, enemigo, tono, emocion).
   const payload = {
     nicho_negocio: brandData.service || "Negocio",
     cliente_ideal: brandData.audiences?.join(", ") || "General",
     ubicacion: brandData.location || "San Salvador",
     color_hex: brandData.primary || "#0b6670",
-    vibra_marca: brandData.styles?.[0] || "Profesional"
+    vibra_marca: brandData.styles?.[0] || "Profesional",
+    arquetipo_marca: brandData.arquetipo_marca || "Explorador",
+    proposito_marca: brandData.proposito_marca || "Ofrecer experiencias memorables a nuestros clientes.",
+    enemigo_marca: brandData.enemigo_marca || "El servicio impersonal y genérico.",
+    tono_voz: brandData.tono_voz || "Cercano",
+    emocion_objetivo: brandData.emocion_objetivo || "Confianza"
   };
-  
+
   return await request("/api/onboarding", {
     method: "POST",
     body: JSON.stringify(payload)
   });
+}
+
+/**
+ * Obtiene el ADN de marca (OnboardingData) del usuario autenticado.
+ * Lanza un error con `.status === 404` si el usuario aún no hizo onboarding.
+ */
+export async function getOnboarding() {
+  return await request("/api/onboarding", { method: "GET" });
+}
+
+/**
+ * Actualiza el ADN de marca enviando el objeto OnboardingData completo tal cual
+ * lo espera el backend (sin remapear desde el shape local de Onboarding.jsx).
+ * El backend hace upsert, así que esto sirve tanto para crear como editar.
+ * @param {import('../components/dashboard/BrandDNACard').OnboardingData} data
+ */
+export async function updateOnboarding(data) {
+  return await request("/api/onboarding", {
+    method: "POST",
+    body: JSON.stringify(data)
+  });
+}
+
+/**
+ * Obtiene el radar de oportunidades (clima + feriados + reglas) ordenado por score descendente.
+ */
+export async function getForecast() {
+  return await request("/api/forecast", { method: "GET" });
 }
 
 /**
