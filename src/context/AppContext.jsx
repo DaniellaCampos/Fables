@@ -1,6 +1,13 @@
-import { createContext, useContext, useMemo, useState } from 'react';
+import { createContext, useContext, useMemo, useState, useEffect } from 'react';
 import { defaultBrand, mockImages } from '../mocks/data';
-import { loginWithGoogle, loginWithEmail, registerWithEmail, logoutUser } from '../services/firebase';
+import { 
+  loginWithGoogle, 
+  loginWithEmail, 
+  registerWithEmail, 
+  logoutUser,
+  saveUserDesign,
+  getUserDesigns
+} from '../services/firebase';
 
 const AppContext = createContext(null);
 const initialProject = {
@@ -22,6 +29,23 @@ export function AppProvider({ children }) {
   const [images, setImages] = useState(mockImages.slice(0, 2));
   const [user, setUser] = useState(() => JSON.parse(sessionStorage.getItem('cc-user') || 'null'));
   const [campaign, setCampaign] = useState(null);
+  
+  // State for user's saved designs history
+  const [savedDesigns, setSavedDesigns] = useState([]);
+
+  // Fetch designs from Firestore/LocalStorage when user changes
+  useEffect(() => {
+    const fetchDesigns = async () => {
+      const uid = user?.uid || 'mock-user-12345';
+      try {
+        const list = await getUserDesigns(uid);
+        setSavedDesigns(list);
+      } catch (error) {
+        console.error("Error al obtener diseños en contexto:", error);
+      }
+    };
+    fetchDesigns();
+  }, [user]);
 
   const updateBrand = (next) => {
     setBrand(next);
@@ -64,6 +88,28 @@ export function AppProvider({ children }) {
     }
   };
 
+  const saveDesign = async (designName) => {
+    const uid = user?.uid || 'mock-user-12345';
+    // Get currently selected image URL
+    const activeImage = images[project.selectedImage] || images[0];
+    
+    const designData = {
+      name: designName || 'Diseño sin título',
+      format: project.format || 'story',
+      imageUrl: activeImage?.url || 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=700&q=80',
+      projectSettings: { ...project }
+    };
+
+    try {
+      await saveUserDesign(uid, designData);
+      const list = await getUserDesigns(uid);
+      setSavedDesigns(list);
+    } catch (error) {
+      console.error("Error al guardar diseño en contexto:", error);
+      throw error;
+    }
+  };
+
   const logout = async () => {
     try {
       await logoutUser();
@@ -85,10 +131,12 @@ export function AppProvider({ children }) {
     login,
     signInWithEmail,
     signUpWithEmail,
+    savedDesigns,
+    saveDesign,
     logout,
     campaign,
     setCampaign
-  }), [brand, project, images, user, campaign]);
+  }), [brand, project, images, user, savedDesigns, campaign]);
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 }

@@ -1,3 +1,78 @@
-import {ArrowRight,Plus} from 'lucide-react'; import {useNavigate} from 'react-router-dom'; import {Badge,Button} from '../components/ui';
-const designs=[['Fin de semana en el lago','Historia','https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=700&q=80'],['Una tarde diferente','Post','https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=700&q=80'],['Descubre Ilopango','Carrusel','https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=700&q=80']];
-export default function Designs(){const nav=useNavigate();return <div className="page"><header className="page-heading split"><div><Badge>TU COLECCIÓN</Badge><h1>Mis diseños</h1><p>Ideas que guardaste para volver a usarlas o inspirarte.</p></div><Button onClick={()=>nav('/create')}><Plus/>Nueva pieza</Button></header><div className="designs-grid">{designs.map(([name,type,url],i)=><article key={name}><img src={url} alt={name}/><div><Badge tone={i===0?'coral':'teal'}>{type}</Badge><h2>{name}</h2><p>Editado hace {i+2} días</p><button onClick={()=>nav('/create/preview')}>Abrir <ArrowRight/></button></div></article>)}</div></div>}
+import { ArrowRight, Plus } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Badge, Button } from '../components/ui';
+import { useApp } from '../context/AppContext';
+
+export default function Designs() {
+  const { savedDesigns, setProject } = useApp();
+  const nav = useNavigate();
+
+  // If there are no saved designs, fallback to default mocks so the page isn't empty
+  const designsToShow = savedDesigns.length > 0 
+    ? savedDesigns.map((d) => ({
+        name: d.name,
+        type: d.format === 'story' ? 'Historia' : d.format === 'post' ? 'Post' : 'Carrusel',
+        url: d.imageUrl,
+        editedText: 'Creado recientemente',
+        settings: d.projectSettings
+      }))
+    : [
+        { 
+          name: 'Fin de semana en el lago', 
+          type: 'Historia', 
+          url: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=700&q=80', 
+          editedText: 'Editado hace 2 días' 
+        },
+        { 
+          name: 'Una tarde diferente', 
+          type: 'Post', 
+          url: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=700&q=80', 
+          editedText: 'Editado hace 3 días' 
+        },
+        { 
+          name: 'Descubre Ilopango', 
+          type: 'Carrusel', 
+          url: 'https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=700&q=80', 
+          editedText: 'Editado hace 4 días' 
+        }
+      ];
+
+  const handleOpen = (item) => {
+    if (item.settings) {
+      setProject(item.settings);
+    }
+    nav('/create/preview');
+  };
+
+  return (
+    <div className="page">
+      <header className="page-heading split">
+        <div>
+          <Badge>TU COLECCIÓN</Badge>
+          <h1>Mis diseños</h1>
+          <p>Ideas que guardaste para volver a usarlas o inspirarte.</p>
+        </div>
+        <Button onClick={() => nav('/create')}>
+          <Plus />
+          Nueva pieza
+        </Button>
+      </header>
+
+      <div className="designs-grid">
+        {designsToShow.map((item, i) => (
+          <article key={item.name + '-' + i}>
+            <img src={item.url} alt={item.name} />
+            <div>
+              <Badge tone={i === 0 ? 'coral' : 'teal'}>{item.type}</Badge>
+              <h2>{item.name}</h2>
+              <p>{item.editedText}</p>
+              <button onClick={() => handleOpen(item)}>
+                Abrir <ArrowRight />
+              </button>
+            </div>
+          </article>
+        ))}
+      </div>
+    </div>
+  );
+}

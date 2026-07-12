@@ -113,5 +113,13 @@ export const categoryDefs = [
     key: 'selectedCta',
     direct: false,
     description: 'Llamado a la acción'
+  },
+  {
+    id: 'export',
+    label: 'Exportar',
+    icon: '💾',
+    key: 'export',
+    direct: false,
+    description: 'Guardar y descargar tu diseño'
   }
 ];

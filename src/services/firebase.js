@@ -8,6 +8,14 @@ import {
   createUserWithEmailAndPassword, 
   updateProfile 
 } from "firebase/auth";
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  getDocs,
+  query,
+  where
+} from "firebase/firestore";
 
 // Configuración de Firebase (se lee de variables de entorno para mayor seguridad)
 const firebaseConfig = {
@@ -21,6 +29,7 @@ const firebaseConfig = {
 
 let app;
 let auth;
+let db;
 let googleProvider;
 let isMock = false;
 
@@ -32,6 +41,7 @@ if (!firebaseConfig.apiKey || firebaseConfig.apiKey === "your_api_key_here") {
   try {
     app = initializeApp(firebaseConfig);
     auth = getAuth(app);
+    db = getFirestore(app);
     googleProvider = new GoogleAuthProvider();
   } catch (error) {
     console.error("Failed to initialize Firebase Auth, falling back to mock mode:", error);
@@ -116,6 +126,72 @@ export const registerWithEmail = async (email, password, displayName) => {
     photoURL: user.photoURL,
     token: token
   };
+};
+
+// Guardar diseño del usuario en Firestore (con fallback a localStorage)
+export const saveUserDesign = async (uid, design) => {
+  const newDesign = {
+    ...design,
+    uid,
+    createdAt: new Date().toISOString()
+  };
+
+  if (isMock) {
+    const localDesigns = JSON.parse(localStorage.getItem('cc_saved_designs_' + uid) || '[]');
+    newDesign.id = `mock-design-${Date.now()}`;
+    localDesigns.push(newDesign);
+    localStorage.setItem('cc_saved_designs_' + uid, JSON.stringify(localDesigns));
+    return newDesign.id;
+  }
+
+  try {
+    const docRef = await addDoc(collection(db, 'designs'), newDesign);
+    newDesign.id = docRef.id;
+    
+    // Guardar también localmente como caché rápida
+    const localDesigns = JSON.parse(localStorage.getItem('cc_saved_designs_' + uid) || '[]');
+    localDesigns.push(newDesign);
+    localStorage.setItem('cc_saved_designs_' + uid, JSON.stringify(localDesigns));
+    
+    return docRef.id;
+  } catch (e) {
+    console.warn("Firestore save failed, falling back to localStorage:", e);
+    // Fallback de emergencia a almacenamiento local
+    const localDesigns = JSON.parse(localStorage.getItem('cc_saved_designs_' + uid) || '[]');
+    newDesign.id = `local-design-${Date.now()}`;
+    localDesigns.push(newDesign);
+    localStorage.setItem('cc_saved_designs_' + uid, JSON.stringify(localDesigns));
+    return newDesign.id;
+  }
+};
+
+// Obtener diseños del usuario desde Firestore (con fusión de localStorage)
+export const getUserDesigns = async (uid) => {
+  const localDesigns = JSON.parse(localStorage.getItem('cc_saved_designs_' + uid) || '[]');
+  
+  if (isMock) {
+    return localDesigns.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  }
+
+  try {
+    const q = query(collection(db, 'designs'), where('uid', '==', uid));
+    const querySnapshot = await getDocs(q);
+    const firestoreDesigns = [];
+    querySnapshot.forEach((doc) => {
+      firestoreDesigns.push({ id: doc.id, ...doc.data() });
+    });
+    
+    // Fusionar para evitar duplicados si los datos ya existen en Firestore
+    const allDesignsMap = new Map();
+    localDesigns.forEach(d => allDesignsMap.set(d.id, d));
+    firestoreDesigns.forEach(d => allDesignsMap.set(d.id, d));
+    
+    const combined = Array.from(allDesignsMap.values());
+    return combined.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  } catch (e) {
+    console.warn("Firestore read failed, loading local designs only:", e);
+    return localDesigns.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  }
 };
 
 // Cerrar sesión

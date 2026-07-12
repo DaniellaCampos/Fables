@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { ArrowLeft, ArrowRight, Check, Lock, Shuffle, Sparkles, Unlock } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, Lock, Shuffle, Sparkles, Unlock, Save, Download } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import {
   categoryDefs,
@@ -16,12 +16,13 @@ import {
   mockImages
 } from '../mocks/data';
 import { useApp } from '../context/AppContext';
-import FixedDesignCanvas from '../components/FixedDesignCanvas';
+import DesignPreview from '../components/DesignPreview';
 import FloatingAccessoryCarousel from '../components/FloatingAccessoryCarousel';
 import CategoryBottomBar from '../components/CategoryBottomBar';
 import RotatingOptionRail from '../components/RotatingOptionRail';
 import { Badge, Button } from '../components/ui';
 import { generateCampaign } from '../services/api';
+import { toPng } from 'html-to-image';
 
 const categoryBlueprint = categoryDefs.map((cat) => ({
   ...cat,
@@ -36,7 +37,8 @@ export default function Closet() {
     setImages,
     user, 
     campaign, 
-    setCampaign 
+    setCampaign,
+    saveDesign
   } = useApp();
   const nav = useNavigate();
 
@@ -49,6 +51,72 @@ export default function Closet() {
   const [candidateSelection, setCandidateSelection] = useState({ category: null, value: null });
   const [lockedCategories, setLockedCategories] = useState({});
   const [addedPiece, setAddedPiece] = useState('');
+
+  // Estados para exportar (Guardar y Descargar)
+  const [designName, setDesignName] = useState('Fin de semana en el lago');
+  const [saving, setSaving] = useState(false);
+  const [downloading, setDownloading] = useState(false);
+  const [toast, setToast] = useState('');
+
+  const notify = (m) => {
+    setToast(m);
+    setTimeout(() => setToast(''), 2400);
+  };
+
+  const handleSaveDesign = async () => {
+    if (saving) return;
+    setSaving(true);
+    notify('Guardando en tu colección...');
+    try {
+      await saveDesign(designName);
+      notify('¡Diseño guardado con éxito! Redirigiendo...');
+      setTimeout(() => {
+        nav('/designs');
+      }, 1200);
+    } catch (error) {
+      console.error('Error al guardar diseño:', error);
+      notify('Error al guardar diseño');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDownloadImage = async () => {
+    if (downloading) return;
+    setDownloading(true);
+    notify('Generando imagen para descargar...');
+    
+    const element = document.querySelector('.design-preview');
+    if (!element) {
+      notify('Error: No se pudo localizar el diseño');
+      setDownloading(false);
+      return;
+    }
+
+    try {
+      const dataUrl = await toPng(element, {
+        cacheBust: true,
+        pixelRatio: 2,
+        style: {
+          transform: 'none',
+          margin: '0',
+          borderRadius: '0',
+        }
+      });
+
+      const link = document.createElement('a');
+      link.download = `${designName.trim().replace(/\s+/g, '_') || 'diseno'}.png`;
+      link.href = dataUrl;
+      link.click();
+      
+      notify('¡Imagen descargada con éxito!');
+    } catch (error) {
+      console.error('Error al exportar imagen:', error);
+      notify('Error al exportar imagen (comprueba CORS)');
+    } finally {
+      setDownloading(false);
+    }
+  };
 
   // Estados locales para la generación por IA
   const [idea, setIdea] = useState("Lanzamiento de croissants de chocolate calientes los domingos");
@@ -530,57 +598,101 @@ export default function Closet() {
       <main className="mannequin-studio-main">
         <div className="mannequin-stage">
           <div className="stage-caption">
-            <span>{activeCategory?.direct ? 'AJUSTE DIRECTO' : 'ACCESORIO EN PRUEBA'}</span>
+            <span>{activeCategory?.id === 'export' ? 'EXPORTAR DISEÑO' : (activeCategory?.direct ? 'AJUSTE DIRECTO' : 'ACCESORIO EN PRUEBA')}</span>
             <b>
-              {activeCategory?.label} · {itemLabel(activeCategory?.items[candidateIndex])}
+              {activeCategory?.id === 'export' ? 'Guarda o descarga tu pieza' : `${activeCategory?.label} · ${itemLabel(activeCategory?.items[candidateIndex])}`}
             </b>
           </div>
 
           {/* Canvas Fijo Central */}
-          <div className="canvas-container">
-            <FixedDesignCanvas
+          <div className="canvas-anchor">
+            <DesignPreview
               design={previewDesign}
-              candidateSelection={candidateSelection}
-              activeCategory={activeCategory}
               addedPiece={addedPiece}
-              isDirect={activeCategory?.direct}
             />
           </div>
 
           {/* Información del accesorio y acciones */}
-          <div className="stage-option-info">
-            <div className="option-info-text">
-              <span>{candidateSelection.category ? 'VISTA TEMPORAL' : 'PIEZA CONFIRMADA'}</span>
-              <h2>{itemLabel(activeCategory?.items[candidateIndex])}</h2>
-              <p>
-                {activeCategory?.direct
-                  ? 'Este ajuste se aplica directamente sobre la imagen central.'
-                  : activeCategory?.items[candidateIndex]?.description ||
-                    activeCategory?.items[candidateIndex]?.tag ||
-                    closetRecommendations[activeCategory?.id] ||
-                    ''}
-              </p>
-            </div>
+          {activeCategory?.id === 'export' ? (
+            <div className="stage-option-info export-panel" style={{ width: 'min(330px, 28vw)' }}>
+              <div className="option-info-text">
+                <span style={{ color: '#e85f3d' }}>EXPORTACIÓN RÁPIDA</span>
+                <h2>¿Terminaste tu diseño?</h2>
+                <p>Nombra tu pieza y elige una opción:</p>
+                
+                <div style={{ margin: '1rem 0' }}>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 'bold', color: '#073f46', display: 'block', marginBottom: '4px' }}>
+                    Nombre del diseño:
+                  </label>
+                  <input
+                    type="text"
+                    value={designName}
+                    onChange={(e) => setDesignName(e.target.value)}
+                    placeholder="Ej. Promo Fin de Semana"
+                    style={{
+                      padding: '0.65rem 0.85rem',
+                      borderRadius: '8px',
+                      border: '2px solid #e2d9c2',
+                      width: '100%',
+                      fontSize: '0.9rem',
+                      outline: 'none',
+                      color: '#172a35',
+                      background: '#fbf7ed',
+                      fontFamily: 'inherit'
+                    }}
+                    onFocus={(e) => e.target.style.borderColor = '#0b6670'}
+                    onBlur={(e) => e.target.style.borderColor = '#e2d9c2'}
+                  />
+                </div>
+              </div>
 
-            <div className="stage-option-actions">
-              <Button
-                variant="secondary"
-                onClick={discardCandidate}
-                style={{
-                  visibility: candidateSelection.category ? 'visible' : 'hidden'
-                }}
-              >
-                Descartar
-              </Button>
-              <Button onClick={commitCandidate}>
-                Agregar <Check />
-              </Button>
+              <div style={{ display: 'grid', gap: '8px', marginTop: '12px' }}>
+                <Button onClick={handleSaveDesign} disabled={saving} style={{ gap: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Save size={16} />
+                  {saving ? 'Guardando...' : 'Guardar en Historial'}
+                </Button>
+                
+                <Button variant="secondary" onClick={handleDownloadImage} disabled={downloading} style={{ gap: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Download size={16} />
+                  {downloading ? 'Descargando...' : 'Descargar Imagen'}
+                </Button>
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="stage-option-info">
+              <div className="option-info-text">
+                <span>{candidateSelection.category ? 'VISTA TEMPORAL' : 'PIEZA CONFIRMADA'}</span>
+                <h2>{itemLabel(activeCategory?.items[candidateIndex])}</h2>
+                <p>
+                  {activeCategory?.direct
+                    ? 'Este ajuste se aplica directamente sobre la imagen central.'
+                    : activeCategory?.items[candidateIndex]?.description ||
+                      activeCategory?.items[candidateIndex]?.tag ||
+                      closetRecommendations[activeCategory?.id] ||
+                      ''}
+                </p>
+              </div>
+
+              <div className="stage-option-actions">
+                <Button
+                  variant="secondary"
+                  onClick={discardCandidate}
+                  style={{
+                    visibility: candidateSelection.category ? 'visible' : 'hidden'
+                  }}
+                >
+                  Descartar
+                </Button>
+                <Button onClick={commitCandidate}>
+                  Agregar <Check />
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* Carrusel Flotante - solo para categorías que no son ajustes directos */}
-        {!activeCategory?.direct && activeCategory?.items.length > 0 && (
+        {/* Carrusel Flotante - solo para categorías que no son export ni ajustes directos */}
+        {activeCategory?.id !== 'export' && !activeCategory?.direct && activeCategory?.items.length > 0 && (
           <div className="carousel-section">
             <FloatingAccessoryCarousel
               items={activeCategory.items}
@@ -604,6 +716,13 @@ export default function Closet() {
           }))
         }
       />
+
+      {toast && (
+        <div className="toast" role="status" style={{ zIndex: 1000 }}>
+          <Check />
+          {toast}
+        </div>
+      )}
     </div>
   );
 }
