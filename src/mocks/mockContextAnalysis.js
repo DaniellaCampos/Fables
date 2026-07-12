@@ -40,9 +40,7 @@ export const closetRecommendations = {
   textPosition: 'El texto superior usa el espacio libre y no cubre a las personas.',
   headline: 'Un mensaje breve funciona mejor para una historia vista rápidamente.',
   cta: 'Una acción concreta ayuda a convertir el interés en reservas.',
-  decoration: 'Un sello de viaje refuerza la autenticidad turística.',
-  textPosition: 'El texto superior aprovecha el espacio libre.',
-  typography: 'Amigable es accesible y familiar.'
+  decoration: 'Un sello de viaje refuerza la autenticidad turística.'
 };
 
 export const brandDefaults = {

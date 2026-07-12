@@ -21,19 +21,19 @@ export default function CategoryBottomBar({
     }
   }, [activeIndex]);
 
-  const handleKeyDown = (e) => {
-    if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)) return;
-
-    if (e.key === 'ArrowUp') {
-      e.preventDefault();
-      onCategoryChange((activeIndex - 1 + categoryDefs.length) % categoryDefs.length);
-    } else if (e.key === 'ArrowDown') {
-      e.preventDefault();
-      onCategoryChange((activeIndex + 1) % categoryDefs.length);
-    }
-  };
-
   useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)) return;
+
+      if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        onCategoryChange((activeIndex - 1 + categoryDefs.length) % categoryDefs.length);
+      } else if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        onCategoryChange((activeIndex + 1) % categoryDefs.length);
+      }
+    };
+
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [activeIndex, onCategoryChange]);
