@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+
+<html class="light" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Creator’s Closet Builder</title>
+<!-- Google Fonts: Epilogue (Headlines), Space Grotesk (Labels), Plus Jakarta Sans (Body) -->
+<link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@700;800&amp;family=Plus+Jakarta+Sans:wght@400;500&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.65);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+        }
+        .liquid-shadow {
+            box-shadow: 0px 10px 30px rgba(0, 109, 119, 0.1);
+        }
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "outline-variant": "#bec8ca",
+                        "on-error-container": "#93000a",
+                        "on-tertiary-fixed-variant": "#594400",
+                        "surface-container-high": "#eae8e4",
+                        "primary": "#00535b",
+                        "background": "#fbf9f5",
+                        "surface-tint": "#006972",
+                        "primary-fixed-dim": "#82d3de",
+                        "on-primary-fixed": "#001f23",
+                        "secondary-fixed-dim": "#ffb59f",
+                        "on-surface-variant": "#3e494a",
+                        "on-primary-container": "#9becf7",
+                        "secondary-container": "#fe6f42",
+                        "surface": "#fbf9f5",
+                        "surface-dim": "#dbdad6",
+                        "tertiary-container": "#7a5f0b",
+                        "surface-bright": "#fbf9f5",
+                        "on-secondary-fixed-variant": "#852300",
+                        "on-surface": "#1b1c1a",
+                        "surface-container-lowest": "#ffffff",
+                        "on-tertiary": "#ffffff",
+                        "on-secondary": "#ffffff",
+                        "tertiary-fixed": "#ffdf96",
+                        "on-secondary-container": "#631800",
+                        "on-tertiary-container": "#ffdb87",
+                        "on-primary-fixed-variant": "#004f56",
+                        "inverse-surface": "#30312e",
+                        "inverse-on-surface": "#f2f0ed",
+                        "inverse-primary": "#82d3de",
+                        "surface-variant": "#e4e2de",
+                        "secondary": "#ac3509",
+                        "surface-container": "#efeeea",
+                        "on-secondary-fixed": "#3a0a00",
+                        "tertiary": "#5e4800",
+                        "on-primary": "#ffffff",
+                        "on-tertiary-fixed": "#251a00",
+                        "on-error": "#ffffff",
+                        "primary-container": "#006d77",
+                        "surface-container-low": "#f5f3ef",
+                        "secondary-fixed": "#ffdbd0",
+                        "primary-fixed": "#9ff0fb",
+                        "error": "#ba1a1a",
+                        "tertiary-fixed-dim": "#e7c269",
+                        "on-background": "#1b1c1a",
+                        "surface-container-highest": "#e4e2de",
+                        "outline": "#6f797a",
+                        "error-container": "#ffdad6"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "2xl": "24px",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xs": "4px",
+                        "sm": "12px",
+                        "gutter": "16px",
+                        "container-margin": "24px",
+                        "xl": "80px",
+                        "base": "8px",
+                        "lg": "48px",
+                        "md": "24px"
+                    },
+                    "fontFamily": {
+                        "headline-lg": ["Epilogue"],
+                        "label-sm": ["Space Grotesk"],
+                        "label-bold": ["Space Grotesk"],
+                        "display-lg": ["Epilogue"],
+                        "display-md": ["Epilogue"],
+                        "body-md": ["Plus Jakarta Sans"],
+                        "body-lg": ["Plus Jakarta Sans"]
+                    },
+                    "fontSize": {
+                        "headline-lg": ["30px", {"lineHeight": "1.3", "fontWeight": "700"}],
+                        "label-sm": ["12px", {"lineHeight": "1.2", "fontWeight": "500"}],
+                        "label-bold": ["14px", {"lineHeight": "1.2", "fontWeight": "600"}],
+                        "display-lg": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                        "display-md": ["36px", {"lineHeight": "1.2", "fontWeight": "700"}],
+                        "body-md": ["16px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                        "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background text-on-surface font-body-md min-h-screen flex overflow-hidden">
+<!-- NavigationDrawer (Shared Component) -->
+<aside class="hidden md:flex flex-col h-screen fixed left-0 top-0 p-container-margin z-40 bg-surface-container-low border-r border-outline-variant/20 w-64">
+<div class="font-headline-lg text-headline-lg font-bold text-primary mb-lg">Creator’s Closet</div>
+<!-- Header Type Profile -->
+<div class="flex items-center gap-sm mb-lg">
+<div class="w-12 h-12 rounded-full bg-primary-container/20 flex items-center justify-center overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Close-up professional portrait of a smiling young Salvadoran entrepreneur with a bright, friendly expression. She is standing against a soft-focus background of a tropical beach during the golden hour, with warm sun rays catching her hair. The lighting is editorial and high-end, featuring the vibrant teal and cream color palette of the brand." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDonwWBKpPtZ_FV95dKAy3DgRqsWDqAPsliZpaUEGC7bEdUL3l_-WKi8As1dDsbhajJIhk4XEMxH9poX48GYcBNWhkkWyghJy9zuXuZxOFDgUPnfAWui3syIe74v59LSfm3pz3lGKuvm9BmIHQxHUyAVhVkMWqdMff9KRXOsOyU9V99OwZkxrxeRs3kerwnewrDhYsaXkxqCvHL8oYmfvlYKUQ-1g4Sccr4VoDRGbHk8iHZFU-iPplCn7coEWxCsyRmSjqdDnXv-sE"/>
+</div>
+<div class="flex flex-col">
+<span class="font-label-bold text-on-surface font-bold">¡Hola, Emprendedor!</span>
+<span class="text-xs text-on-surface-variant">Marketing Assistant</span>
+</div>
+</div>
+<nav class="space-y-2 flex-grow">
+<!-- Inicio -->
+<a class="flex items-center gap-sm text-on-surface-variant hover:bg-surface-variant/50 rounded-lg px-4 py-3 hover:translate-x-1 transition-transform" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-body-md">Inicio</span>
+</a>
+<!-- Crear (Active) -->
+<a class="flex items-center gap-sm bg-primary/10 text-primary font-bold rounded-lg px-4 py-3 hover:translate-x-1 transition-transform active:bg-primary/20" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">rebase_edit</span>
+<span class="font-body-md">Crear</span>
+</a>
+<!-- Mi marca -->
+<a class="flex items-center gap-sm text-on-surface-variant hover:bg-surface-variant/50 rounded-lg px-4 py-3 hover:translate-x-1 transition-transform" href="#">
+<span class="material-symbols-outlined">style</span>
+<span class="font-body-md">Mi marca</span>
+</a>
+</nav>
+<div class="mt-auto pt-lg">
+<button class="w-full py-3 bg-primary text-on-primary rounded-xl font-label-bold liquid-shadow hover:scale-[1.02] transition-transform active:scale-95 duration-200">
+                Guardar Diseño
+            </button>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="flex-grow ml-64 flex flex-col h-screen">
+<!-- TopAppBar (Shared Component) -->
+<header class="fixed top-0 left-64 right-0 z-30 flex justify-between items-center px-container-margin py-sm bg-surface/65 backdrop-blur-xl border-b border-white/40 shadow-sm">
+<div class="font-headline-lg-mobile text-headline-lg-mobile font-bold text-primary">Panel de Diseño</div>
+<div class="flex items-center gap-md">
+<div class="hidden lg:flex gap-gutter items-center mr-md">
+<span class="text-label-sm font-label-sm text-primary uppercase tracking-widest">Editor Real-Time</span>
+<div class="h-2 w-2 rounded-full bg-secondary-container animate-pulse"></div>
+</div>
+<button class="material-symbols-outlined text-on-surface-variant hover:opacity-80 transition-opacity active:scale-95 duration-200">notifications</button>
+<div class="w-8 h-8 rounded-full bg-outline-variant overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Avatar of a creative professional, looking stylish and modern. The image is a studio shot with soft, diffused lighting and a clean, warm-toned background that complements the brand's aesthetic. High-quality resolution with deep focus on the eyes." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAu1U9AX_tdEQE_AZ0ZkmL0EbAMT40JNdPAqM7mzZtYdl68SlkQ3KV2B-foB9zf6vGaNz8MsmNsGTu0aoVHYhY1XmDd0pmSou6AZxh8TS_ktaEAF9A2EfdT3Xfct6lUQfM4cdXQ8fMg6aVOmOvU_9qOr_eoidK23YTfk6CWjzb5JYbx23BjSYudTtRc99sE0wF1w2vg9xP_23YHqQB72ZM3ui0EtYhxKtv7lsvVfHnj7_I4te8XMLtwTfRwtc6mNpxaAItubNuwOtg"/>
+</div>
+</div>
+</header>
+<!-- Builder Interface -->
+<div class="mt-[72px] flex flex-grow overflow-hidden p-container-margin gap-md">
+<!-- Central Real-Time Preview (Liquid Glass Aesthetic) -->
+<section class="flex-grow flex flex-col h-full">
+<div class="relative flex-grow glass-panel rounded-2xl liquid-shadow overflow-hidden flex items-center justify-center p-lg">
+<!-- Atmospheric Background for Preview -->
+<div class="absolute inset-0 z-0 opacity-20 pointer-events-none">
+
+</div>
+<!-- Design Canvas Area -->
+<div class="relative z-10 w-full h-full max-w-2xl bg-white shadow-2xl rounded-lg aspect-[4/5] overflow-hidden transform hover:scale-[1.01] transition-all duration-500" id="preview-container">
+<div class="w-full h-full bg-cover bg-center flex items-end p-md" data-alt="A cinematic, high-end photograph of a luxury boutique in El Salvador, featuring minimalist architecture with large glass windows and tropical greenery. The sun is setting, casting long, soft shadows and a warm glow. The image style is polished, editorial, and sophisticated, embodying the Pacific sunrise aesthetic." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCgt36uh3K04NXL325YGtPKLqD1RkCTu_fP2xK27JmHOsyQFswwWq-IyRfsEzubyDGuuqeed_fTgOY_Jvmwh3yltrSmf0yqTbOdRathP_g5Jg6WTP8Scg3aBmA4EfK3iS_0rhAAaUT_Wi4wdafjJ2KF7a7rzBIt5CXLxJs_8rA2bhLd7Pmp8TBfuIArmAGRoggOTZlLQMSruA9ho3pYMcQjYt5b-ICLMArDeyIulZ-1md50St7eG4rZH04J8hoZ308Ep2B8sGt2moA')">
+<div class="glass-panel p-gutter w-full rounded-xl">
+<h2 class="font-display-md text-display-md text-primary leading-none">Nueva Colección</h2>
+<p class="font-body-md text-on-surface mt-xs">Explora el alma de El Salvador.</p>
+</div>
+</div>
+</div>
+<!-- Tool Overlays -->
+<div class="absolute bottom-8 right-8 flex gap-xs">
+<button class="w-10 h-10 rounded-full bg-primary text-on-primary flex items-center justify-center liquid-shadow hover:scale-110 transition-transform">
+<span class="material-symbols-outlined">zoom_in</span>
+</button>
+<button class="w-10 h-10 rounded-full bg-white text-primary flex items-center justify-center liquid-shadow hover:scale-110 transition-transform">
+<span class="material-symbols-outlined">undo</span>
+</button>
+</div>
+</div>
+</section>
+<!-- Side Selectors (Stacked Visual Rows) -->
+<aside class="w-80 flex flex-col gap-gutter overflow-y-auto no-scrollbar pb-lg">
+<!-- Category: Plantillas -->
+<div class="space-y-sm">
+<div class="flex justify-between items-center px-xs">
+<span class="font-label-bold text-label-bold uppercase tracking-widest text-primary">Plantilla</span>
+<button class="text-xs text-secondary font-bold">Ver todo</button>
+</div>
+<div class="grid grid-cols-2 gap-sm">
+<div class="group relative aspect-square rounded-xl overflow-hidden border-2 border-primary cursor-pointer transition-all">
+<img class="w-full h-full object-cover" data-alt="Minimalist graphic design layout template featuring asymmetrical blocks and generous white space. The color palette includes soft sand and deep teal. High-end editorial aesthetic for a fashion or tourism brand." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVpsLEFhKx7uR9HRKvpiUnpESSZqt2DBl41hX_OGZRaRbtm-SILfy8e9sAfxRx3XdZ79h9TLVS7PLEzxbmloLhP4Dlm1Zhi3Bl0aAi9gxcPJz5tzR8EY4ayXWUuvqYnjCF-HiWPRHiOeCgPJxiXa6bfwp8cl07rZoLvwa5_lPy-IzmCUxiLjNwZjl83tLkQEvKcLTDOI3TTEnGuevGjRsThBDQ0-zji8kaObpKRrGLThJRktwo_cAYiQdegEU62ETepNQ4SiI4BF8"/>
+<div class="absolute inset-0 bg-primary/20 flex items-center justify-center opacity-100">
+<span class="material-symbols-outlined text-white" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+</div>
+<div class="group relative aspect-square rounded-xl overflow-hidden border-2 border-transparent hover:border-outline-variant cursor-pointer transition-all">
+<img class="w-full h-full object-cover" data-alt="Modern geometric social media template with bold typography and a placeholder for a tropical destination photo. Clean lines, professional layout, and optimistic lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDIvJi1hkARK6-GFtfbOxl8YhGZqZ71-_Y5tD88SVYSk1wdyTski8J2WsmZgl5pQpfGgN2vmeNJKqYkpx1V1l-Sf0nR1UjOf3_QOZNlt79lyUTHDHjyvSyGsIeGPKxh1Gg7eXy6D858PydEICAtOEg3I7nMmKx9XGV6c2I9qod-yPDkDkGoRI0DFftZktGq7M-VjYdnugx7-u6dUbvMMJC-dw__5Ys9EPmkDCmP_dstjaTWDTXsAEiI7ZoeO5tG5mJ34npzKSVuI1M"/>
+</div>
+</div>
+</div>
+<!-- Category: Imagen -->
+<div class="space-y-sm">
+<div class="flex justify-between items-center px-xs">
+<span class="font-label-bold text-label-bold uppercase tracking-widest text-primary">Imagen</span>
+<div class="flex gap-xs">
+<button class="material-symbols-outlined text-sm text-on-surface-variant">upload</button>
+<button class="material-symbols-outlined text-sm text-on-surface-variant">search</button>
+</div>
+</div>
+<div class="space-y-sm">
+<div class="relative h-24 rounded-xl overflow-hidden cursor-pointer group">
+<img class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" data-alt="Aerial view of a pristine beach in El Salvador, showing clear blue water and dark volcanic sand. Professional drone photography with high contrast and vibrant tropical colors." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCewammLVz5cN5gh5GM4MSqRXefL5FkTMjLdhGPpQVgQDgTpiGB-LCtIiBeGSt-qR7txP7FNeKJu8V0CmS3NAxQwaz_dRgllPvAI34-39eGM9kBTlWGU0S5PaaXomIBw1rueUJJsGkGAktE_0ZO6ZxePTUDmy0z4qeJcDDBeUkEyWU4I_PtLXbkQ7MMsTHqe414IFPrnA4uL4zb0x1MDsXcbthGugYp6B8NomBQno7pLSuC5iETcabruxOJ6Zng_l0yyUVIPXFRGlM"/>
+<div class="absolute bottom-2 left-2 bg-white/80 backdrop-blur-sm px-2 py-1 rounded text-[10px] font-bold uppercase">Costa del Sol</div>
+</div>
+<div class="relative h-24 rounded-xl overflow-hidden cursor-pointer group">
+<img class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" data-alt="A beautiful close-up of local Salvadoran artisanal textiles, showing intricate patterns and vibrant colors like coral, yellow, and teal. Soft lighting and high texture detail." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC6wyIBr9VuZVhagzXjVonaJFPdn3RYfrfYXdU3fPBmeBNV792Iawfom6vF8aPnB2gnoWRUiiGEWkJy_mxd0Q4PwR8cgL9EBr_n1tujGR5ayxP9bPynCNFbBTK0LPiamH8T5QlcierfPvg1unwkIWMX4Jwg5n4rvZP3jnDkMC91K3WqJHmUJ4bUhIE1I1ngHeSIAM06qiaXf4fmPtKAhuJT3L5sLOnhR7Zgw-0fB7zwbDO2EvafuglKlkNFAMvR63cFN4KUHD_yu6Y"/>
+<div class="absolute bottom-2 left-2 bg-white/80 backdrop-blur-sm px-2 py-1 rounded text-[10px] font-bold uppercase">Textiles Locales</div>
+</div>
+</div>
+</div>
+<!-- Category: Tipografía -->
+<div class="space-y-sm">
+<div class="flex justify-between items-center px-xs">
+<span class="font-label-bold text-label-bold uppercase tracking-widest text-primary">Tipografía</span>
+</div>
+<div class="flex flex-col gap-xs">
+<button class="w-full p-sm glass-panel border-primary rounded-xl text-left hover:bg-surface-variant/30 transition-all flex justify-between items-center">
+<span class="font-headline-lg text-lg text-primary">Epilogue Bold</span>
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">radio_button_checked</span>
+</button>
+<button class="w-full p-sm glass-panel border-transparent rounded-xl text-left hover:bg-surface-variant/30 transition-all flex justify-between items-center">
+<span class="font-body-lg text-lg text-on-surface">Plus Jakarta</span>
+<span class="material-symbols-outlined text-outline-variant">radio_button_unchecked</span>
+</button>
+<button class="w-full p-sm glass-panel border-transparent rounded-xl text-left hover:bg-surface-variant/30 transition-all flex justify-between items-center">
+<span class="font-label-bold text-lg text-on-surface-variant" style="font-family: 'Space Grotesk';">Space Grotesk</span>
+<span class="material-symbols-outlined text-outline-variant">radio_button_unchecked</span>
+</button>
+</div>
+</div>
+<!-- Sticker Chips (Retro-Modern Accents) -->
+<div class="space-y-sm">
+<div class="flex justify-between items-center px-xs">
+<span class="font-label-bold text-label-bold uppercase tracking-widest text-primary">Elementos</span>
+</div>
+<div class="flex flex-wrap gap-xs">
+<span class="px-3 py-1 bg-tertiary-fixed text-on-tertiary-fixed font-bold text-[10px] uppercase rounded-full tracking-tighter cursor-pointer hover:rotate-2 transition-transform">Postcard</span>
+<span class="px-3 py-1 bg-secondary-fixed text-on-secondary-fixed font-bold text-[10px] uppercase rounded-full tracking-tighter cursor-pointer hover:-rotate-2 transition-transform">Liquid Glass</span>
+<span class="px-3 py-1 bg-primary-fixed text-on-primary-fixed font-bold text-[10px] uppercase rounded-full tracking-tighter cursor-pointer hover:rotate-3 transition-transform">Sunset Glow</span>
+</div>
+</div>
+</aside>
+</div>
+</main>
+<!-- Floating Action Feedback (Contextual FAB Suppression as it's a Builder) -->
+<!-- Determined not to render a main FAB here to prioritize the Builder flow -->
+<script>
+        // Micro-interaction: Preview Scale on Click
+        const previewContainer = document.getElementById('preview-container');
+        previewContainer.addEventListener('mousedown', () => {
+            previewContainer.style.transform = 'scale(0.98)';
+        });
+        previewContainer.addEventListener('mouseup', () => {
+            previewContainer.style.transform = 'scale(1.01)';
+        });
+
+        // Simple Tab Logic for Selectors
+        document.querySelectorAll('aside button, aside .group').forEach(btn => {
+            btn.addEventListener('click', function() {
+                // Haptic feedback feel
+                this.classList.add('scale-95');
+                setTimeout(() => this.classList.remove('scale-95'), 100);
+            });
+        });
+    </script>
+</body></html>

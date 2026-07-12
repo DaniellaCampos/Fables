@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+
+<html class="light" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Onboarding - Creator’s Closet</title>
+<link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@400;700;800&amp;family=Plus+Jakarta+Sans:wght@400;500;600&amp;family=Space+Grotesk:wght@500;700&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@100..900&amp;family=Plus+Jakarta+Sans:wght@100..900&amp;family=Space+Grotesk:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "outline-variant": "#bec8ca",
+                        "on-error-container": "#93000a",
+                        "on-tertiary-fixed-variant": "#594400",
+                        "surface-container-high": "#eae8e4",
+                        "primary": "#00535b",
+                        "background": "#fbf9f5",
+                        "surface-tint": "#006972",
+                        "primary-fixed-dim": "#82d3de",
+                        "on-primary-fixed": "#001f23",
+                        "secondary-fixed-dim": "#ffb59f",
+                        "on-surface-variant": "#3e494a",
+                        "on-primary-container": "#9becf7",
+                        "secondary-container": "#fe6f42",
+                        "surface": "#fbf9f5",
+                        "surface-dim": "#dbdad6",
+                        "tertiary-container": "#7a5f0b",
+                        "surface-bright": "#fbf9f5",
+                        "on-secondary-fixed-variant": "#852300",
+                        "on-surface": "#1b1c1a",
+                        "surface-container-lowest": "#ffffff",
+                        "on-tertiary": "#ffffff",
+                        "on-secondary": "#ffffff",
+                        "tertiary-fixed": "#ffdf96",
+                        "on-secondary-container": "#631800",
+                        "on-tertiary-container": "#ffdb87",
+                        "on-primary-fixed-variant": "#004f56",
+                        "inverse-surface": "#30312e",
+                        "inverse-on-surface": "#f2f0ed",
+                        "inverse-primary": "#82d3de",
+                        "surface-variant": "#e4e2de",
+                        "secondary": "#ac3509",
+                        "surface-container": "#efeeea",
+                        "on-secondary-fixed": "#3a0a00",
+                        "tertiary": "#5e4800",
+                        "on-primary": "#ffffff",
+                        "on-tertiary-fixed": "#251a00",
+                        "on-error": "#ffffff",
+                        "primary-container": "#006d77",
+                        "surface-container-low": "#f5f3ef",
+                        "secondary-fixed": "#ffdbd0",
+                        "primary-fixed": "#9ff0fb",
+                        "error": "#ba1a1a",
+                        "tertiary-fixed-dim": "#e7c269",
+                        "on-background": "#1b1c1a",
+                        "surface-container-highest": "#e4e2de",
+                        "outline": "#6f797a",
+                        "error-container": "#ffdad6"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xs": "4px",
+                        "sm": "12px",
+                        "gutter": "16px",
+                        "container-margin": "24px",
+                        "xl": "80px",
+                        "base": "8px",
+                        "lg": "48px",
+                        "md": "24px"
+                    },
+                    "fontFamily": {
+                        "headline-lg": ["Epilogue"],
+                        "label-sm": ["Space Grotesk"],
+                        "label-bold": ["Space Grotesk"],
+                        "headline-lg-mobile": ["Epilogue"],
+                        "display-lg": ["Epilogue"],
+                        "display-md": ["Epilogue"],
+                        "body-md": ["Plus Jakarta Sans"],
+                        "body-lg": ["Plus Jakarta Sans"]
+                    },
+                    "fontSize": {
+                        "headline-lg": ["30px", { "lineHeight": "1.3", "fontWeight": "700" }],
+                        "label-sm": ["12px", { "lineHeight": "1.2", "fontWeight": "500" }],
+                        "label-bold": ["14px", { "lineHeight": "1.2", "fontWeight": "600" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "1.3", "fontWeight": "700" }],
+                        "display-lg": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+                        "display-md": ["36px", { "lineHeight": "1.2", "fontWeight": "700" }],
+                        "body-md": ["16px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.65);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .sticker-badge {
+            transform: rotate(-3deg);
+        }
+        .liquid-bg {
+            background: linear-gradient(135deg, #fbf9f5 0%, #efeeea 100%);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body-md min-h-screen selection:bg-primary-fixed selection:text-on-primary-fixed overflow-x-hidden">
+<!-- Atmospheric Background Animation -->
+<div class="fixed inset-0 z-0 pointer-events-none opacity-40">
+
+</div>
+<!-- Main Content Canvas -->
+<main class="relative z-10 min-h-screen flex flex-col items-center justify-center px-container-margin py-xl">
+<!-- Header Section -->
+<header class="w-full max-w-6xl mb-lg text-center md:text-left">
+<div class="inline-block bg-primary text-white font-label-bold text-label-bold px-4 py-1 rounded-full uppercase tracking-widest mb-base sticker-badge shadow-sm">
+                Comencemos
+            </div>
+<h1 class="font-display-lg text-display-lg text-primary tracking-tight">
+                Construyamos el <span class="text-secondary italic">ADN</span> de tu marca
+            </h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl mt-sm">
+                En solo unos pasos, transformaremos tu visión en una identidad visual vibrante inspirada en la esencia de El Salvador.
+            </p>
+</header>
+<!-- Centered Onboarding Container -->
+<div class="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-12 gap-gutter lg:gap-lg items-stretch">
+<!-- LEFT COLUMN: Form Section -->
+<section class="lg:col-span-7 flex flex-col gap-gutter">
+<!-- Progress Bar -->
+<div class="glass-panel rounded-xl p-gutter flex items-center justify-between mb-base">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-primary uppercase font-bold tracking-wider">Paso 1 de 4</span>
+<span class="font-label-bold text-label-bold text-on-surface">Tu negocio</span>
+</div>
+<div class="flex gap-2 h-2 w-48 bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-primary w-1/4 rounded-full transition-all duration-700 ease-out"></div>
+<div class="h-full bg-surface-variant w-3/4"></div>
+</div>
+</div>
+<!-- Form Card -->
+<div class="glass-panel rounded-2xl p-md md:p-lg shadow-sm">
+<form class="space-y-md">
+<div class="space-y-xs">
+<label class="font-label-bold text-label-bold text-primary block" for="brand-name">Nombre de tu marca</label>
+<input class="w-full bg-surface-container-low border border-outline-variant focus:border-primary focus:ring-0 rounded-lg p-sm transition-colors font-body-md" id="brand-name" oninput="document.getElementById('preview-name').innerText = this.value || 'Nombre de tu Marca'" placeholder="Ej. El Nido del Tucán" type="text"/>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-gutter">
+<div class="space-y-xs">
+<label class="font-label-bold text-label-bold text-primary block" for="business-type">Tipo de negocio</label>
+<select class="w-full bg-surface-container-low border border-outline-variant focus:border-primary focus:ring-0 rounded-lg p-sm transition-colors font-body-md" id="business-type">
+<option value="artesania">Artesanías</option>
+<option value="turismo">Turismo de Aventura</option>
+<option value="gastronomia">Gastronomía Local</option>
+<option value="hospedaje">Hospedaje &amp; Glamping</option>
+</select>
+</div>
+<div class="space-y-xs">
+<label class="font-label-bold text-label-bold text-primary block" for="location">Ubicación</label>
+<div class="relative">
+<input class="w-full bg-surface-container-low border border-outline-variant focus:border-primary focus:ring-0 rounded-lg p-sm pl-10 transition-colors font-body-md" id="location" placeholder="Santa Ana, ES" type="text"/>
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-primary text-[20px]">location_on</span>
+</div>
+</div>
+</div>
+<div class="space-y-xs">
+<label class="font-label-bold text-label-bold text-primary block" for="description">¿Qué hace especial a tu negocio?</label>
+<textarea class="w-full bg-surface-container-low border border-outline-variant focus:border-primary focus:ring-0 rounded-lg p-sm transition-colors font-body-md resize-none" id="description" placeholder="Cuéntanos la historia detrás de tu emprendimiento..." rows="4"></textarea>
+</div>
+<div class="pt-base flex justify-end">
+<button class="bg-primary-container text-on-primary-container font-label-bold text-label-bold px-lg py-sm rounded-full shadow-[0px_10px_30px_rgba(0,109,119,0.1)] hover:scale-[1.02] active:scale-95 transition-all flex items-center gap-2 group" type="button">
+                                Siguiente paso
+                                <span class="material-symbols-outlined transition-transform group-hover:translate-x-1">arrow_forward</span>
+</button>
+</div>
+</form>
+</div>
+</section>
+<!-- RIGHT COLUMN: Preview Card Section -->
+<aside class="lg:col-span-5 flex items-center justify-center">
+<div class="relative w-full max-w-sm lg:sticky lg:top-container-margin">
+<!-- Floating Accents (Stickers) -->
+<div class="absolute -top-6 -right-6 z-20 sticker-badge bg-tertiary-fixed text-on-tertiary-fixed font-label-sm text-label-sm px-3 py-1 rounded-full shadow-md font-bold flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">bolt</span> Vista Previa
+                    </div>
+<!-- Live Style Preview Card (Liquid Glass) -->
+<div class="glass-panel rounded-3xl overflow-hidden shadow-2xl transition-all duration-500 hover:shadow-primary/10">
+<!-- Hero Image Preview -->
+<div class="h-64 relative overflow-hidden group">
+<div class="absolute inset-0 bg-gradient-to-t from-primary/60 to-transparent z-10"></div>
+<div class="w-full h-full bg-cover bg-center transition-transform duration-700 group-hover:scale-110" data-alt="A cinematic, sun-drenched landscape of the Coatepeque caldera lake in El Salvador at dawn. The water is a brilliant turquoise, reflecting soft orange and pink clouds. In the foreground, lush green tropical foliage frames the view. The lighting is high-end editorial style, emphasizing atmospheric depth and a serene, professional tourism brand aesthetic with vibrant tropical colors." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDqKdFo7T5I5AxzikRHgq2yV0txRe-NC45s-w9iM7pUF2idZihQ8Nl2F6VaIH2lEsrFl4fOPlY_dyPizMZ0UXdUqPRvm4np0oUrCCDtsk6gc-_SUISdYtq716p3OYGu9dIKCvmfBewZ3MpeCmDzQjCAAeCry-yMQ0WsPokx7cxM88zSJvz8sE3FsvVeXyr1uLgrrU3olHvSliwNvGTXmAuKkxGmh_7MmedF60tN00iikxD0mRUtxRwoYi6Ve0xumwjkxP-9tp-F-xg')"></div>
+<div class="absolute bottom-4 left-4 z-20">
+<span class="font-label-sm text-label-sm text-white/80 bg-black/20 backdrop-blur-md px-3 py-1 rounded-full">Turismo Premium</span>
+</div>
+</div>
+<!-- Card Content -->
+<div class="p-gutter space-y-md">
+<div class="flex justify-between items-start">
+<div>
+<h3 class="font-display-md text-display-md text-primary leading-none" id="preview-name">Mi Marca</h3>
+<p class="font-label-sm text-label-sm text-secondary font-bold mt-1 uppercase tracking-tighter">Estilo: Salvadoran Modern</p>
+</div>
+<div class="bg-primary/10 p-2 rounded-xl">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">landscape</span>
+</div>
+</div>
+<div class="flex flex-wrap gap-2">
+<span class="bg-surface-variant text-on-surface-variant text-[10px] font-bold px-2 py-1 rounded uppercase tracking-widest">Sostenible</span>
+<span class="bg-surface-variant text-on-surface-variant text-[10px] font-bold px-2 py-1 rounded uppercase tracking-widest">Local</span>
+<span class="bg-surface-variant text-on-surface-variant text-[10px] font-bold px-2 py-1 rounded uppercase tracking-widest">Artesanal</span>
+</div>
+<div class="pt-sm border-t border-outline-variant/30">
+<div class="flex items-center gap-gutter">
+<div class="h-10 w-10 rounded-full bg-surface-container-highest border-2 border-white shadow-sm flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-[20px]">person</span>
+</div>
+<div class="flex flex-col">
+<span class="text-[12px] font-bold text-on-surface">Fundador</span>
+<span class="text-[11px] text-on-surface-variant">Creativo de El Salvador</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Background Reflection Element -->
+<div class="absolute -z-10 -bottom-10 -left-10 w-48 h-48 bg-primary/10 rounded-full blur-3xl"></div>
+<div class="absolute -z-10 top-20 -right-20 w-64 h-64 bg-secondary/10 rounded-full blur-3xl"></div>
+</div>
+</aside>
+</div>
+<!-- Decorative Postcard Layout Elements -->
+<div class="hidden xl:block absolute left-gutter top-1/2 -translate-y-1/2 w-48 h-64 bg-surface-container-high rounded-lg p-base shadow-xl sticker-badge opacity-40">
+<div class="w-full h-full border border-dashed border-outline-variant rounded-md flex items-center justify-center">
+<span class="font-label-sm text-label-sm text-outline uppercase rotate-90 tracking-[1em]">DNA DE MARCA</span>
+</div>
+</div>
+</main>
+<!-- Footer Identity -->
+<footer class="relative z-20 w-full flex justify-center pb-md">
+<div class="flex items-center gap-2 text-primary/40 font-label-bold text-label-sm">
+<span class="material-symbols-outlined text-[16px]">verified_user</span>
+<span>Seguridad de Identidad de Marca</span>
+</div>
+</footer>
+<script>
+        // Simple micro-interaction for input focus
+        document.querySelectorAll('input, textarea, select').forEach(el => {
+            el.addEventListener('focus', () => {
+                el.parentElement.querySelector('label')?.classList.add('text-secondary');
+            });
+            el.addEventListener('blur', () => {
+                el.parentElement.querySelector('label')?.classList.remove('text-secondary');
+            });
+        });
+    </script>
+</body></html>

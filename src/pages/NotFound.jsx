@@ -1,0 +1,2 @@
+import {ArrowLeft} from 'lucide-react'; import {useNavigate} from 'react-router-dom'; import {Button} from '../components/ui';
+export default function NotFound(){const nav=useNavigate();return <div className="not-found"><span>404</span><h1>Esta puerta del armario no existe.</h1><p>Quizá la pieza que buscas cambió de lugar. Volvamos a un sitio conocido.</p><Button onClick={()=>nav('/dashboard')}><ArrowLeft/>Volver al inicio</Button></div>}
