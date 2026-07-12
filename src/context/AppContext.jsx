@@ -1,6 +1,6 @@
 import { createContext, useContext, useMemo, useState } from 'react';
 import { defaultBrand, mockImages } from '../mocks/data';
-import { loginWithGoogle, logoutUser } from '../services/firebase';
+import { loginWithGoogle, loginWithEmail, registerWithEmail, logoutUser } from '../services/firebase';
 
 const AppContext = createContext(null);
 const initialProject = {
@@ -24,8 +24,6 @@ export function AppProvider({ children }) {
   const [project, setProject] = useState(initialProject); 
   const [images, setImages] = useState(mockImages.slice(0, 2));
   const [user, setUser] = useState(() => JSON.parse(sessionStorage.getItem('cc-user') || 'null'));
-  
-  // Estado para guardar la campaña generada por IA (copy, hashtags, etc.)
   const [campaign, setCampaign] = useState(null);
 
   const updateBrand = (next) => {
@@ -41,6 +39,30 @@ export function AppProvider({ children }) {
       return userData;
     } catch (error) {
       console.error("Error en login global:", error);
+      throw error;
+    }
+  };
+
+  const signInWithEmail = async (email, password) => {
+    try {
+      const userData = await loginWithEmail(email, password);
+      setUser(userData);
+      sessionStorage.setItem('cc-user', JSON.stringify(userData));
+      return userData;
+    } catch (error) {
+      console.error("Error en login email global:", error);
+      throw error;
+    }
+  };
+
+  const signUpWithEmail = async (email, password, displayName) => {
+    try {
+      const userData = await registerWithEmail(email, password, displayName);
+      setUser(userData);
+      sessionStorage.setItem('cc-user', JSON.stringify(userData));
+      return userData;
+    } catch (error) {
+      console.error("Error en registro email global:", error);
       throw error;
     }
   };
@@ -64,9 +86,11 @@ export function AppProvider({ children }) {
     setImages,
     user,
     login,
+    signInWithEmail,
+    signUpWithEmail,
     logout,
-    campaign,      // Exponemos la campaña
-    setCampaign    // Exponemos el setter
+    campaign,
+    setCampaign
   }), [brand, project, images, user, campaign]);
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
