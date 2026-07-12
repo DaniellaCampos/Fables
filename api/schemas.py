@@ -14,3 +14,9 @@ class ClosetRequest(BaseModel):
     idea_usuario: str        # Ej: "Promo de fin de semana"
     formato: str             # Ej: "Post de Instagram"
     objetivo: str            # Ej: "Vender"
+
+# Modelo para la generacion de contenido (IA + imagen + clima)
+class ClosetGenerateRequest(BaseModel):
+    niche: str
+    location: str
+    idea: str
