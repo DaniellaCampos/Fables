@@ -125,11 +125,11 @@ function ForecastChip({ opportunity, isBest }) {
   return (
     <span
       title={`${opportunity.reason} — ${opportunity.suggestedTimeSlot}`}
-      className={`inline-block text-[10px] font-sans font-semibold px-2 py-0.5 rounded-pill whitespace-nowrap ${
-        isBest ? 'bg-hero text-charcoal' : 'bg-amber text-charcoal'
+      className={`inline-block text-[10px] font-sans font-bold px-1.5 py-0.5 rounded-pill whitespace-nowrap border ${
+        isBest ? 'bg-hero text-charcoal border-hero' : 'bg-white text-charcoal border-amber/40'
       }`}
     >
-      ⚡ Pico esperado
+      ⚡ Pico
     </span>
   );
 }
@@ -258,19 +258,18 @@ export default function ContentCalendarCard({ className = '' }) {
       <div
         key={dateKey}
         className={`relative rounded-xl p-2 min-h-[92px] flex flex-col gap-1.5 border transition-colors ${
-          hasChip ? 'bg-pastel border-transparent' : 'bg-cream/70 border-gray-warm-500/10'
+          hasChip ? 'bg-[#FDF0C6] border-transparent' : 'bg-cream/70 border-gray-warm-500/10'
         } ${isToday ? 'ring-2 ring-charcoal ring-inset' : ''} ${
           isClickable ? 'cursor-pointer hover:border-gray-warm-500/30' : ''
         } ${muted ? 'opacity-40' : ''}`}
         onClick={() => handleDayClick(day, dateKey, hasPosts)}
       >
-        <div className="flex items-center justify-between">
-          <span className={`text-xs font-sans font-semibold ${isToday ? 'text-charcoal' : 'text-gray-warm-800'}`}>
+        <div className="flex items-start justify-between gap-1">
+          <span className={`text-xs font-sans font-bold ${isToday ? 'text-charcoal' : 'text-gray-warm-800'}`}>
             {day.getDate()}
           </span>
+          {hasChip && <ForecastChip opportunity={opp} isBest={isBest} />}
         </div>
-
-        {hasChip && <ForecastChip opportunity={opp} isBest={isBest} />}
 
         <div className="flex flex-wrap gap-1 mt-auto">
           {dayPosts.slice(0, 3).map((post, i) => (
@@ -381,9 +380,9 @@ export default function ContentCalendarCard({ className = '' }) {
 
               return (
                 <div key={dateKey} className="flex flex-col gap-2">
-                  <div className={`text-center rounded-xl py-2 ${isToday ? 'ring-2 ring-charcoal ring-inset' : ''} ${hasChip ? 'bg-pastel' : 'bg-cream/70'}`}>
-                    <div className="text-xs font-sans font-semibold text-gray-warm-800">{WEEKDAY_LABELS[i]}</div>
-                    <div className="text-sm font-sans font-semibold text-charcoal">{day.getDate()}</div>
+                  <div className={`text-center rounded-xl py-2 ${isToday ? 'ring-2 ring-charcoal ring-inset' : ''} ${hasChip ? 'bg-[#FDF0C6]' : 'bg-cream/70'}`}>
+                    <div className="text-xs font-sans font-bold text-gray-warm-800">{WEEKDAY_LABELS[i]}</div>
+                    <div className="text-sm font-sans font-bold text-charcoal">{day.getDate()}</div>
                     {hasChip && <div className="mt-1 flex justify-center"><ForecastChip opportunity={opp} isBest={isBest} /></div>}
                   </div>
 

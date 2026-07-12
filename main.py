@@ -30,17 +30,36 @@ except FileNotFoundError:
     print("Firebase credentials not found, skipping initialization")
     db = None
 
-# Inicializar FastAPI
-app = FastAPI(title="Hackathon Backend - Creator's Closet")
+# Inicializar FastAPI con Response Class personalizado para forzar UTF-8
+from fastapi.responses import JSONResponse
+
+class UTF8JSONResponse(JSONResponse):
+    media_type = "application/json; charset=utf-8"
+
+app = FastAPI(title="Hackathon Backend - Creator's Closet", default_response_class=UTF8JSONResponse)
 
 # Configuración CORS para que React pueda comunicarse sin bloqueos
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], 
+    allow_origins=[
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "http://localhost:5174",
+        "http://127.0.0.1:5174",
+    ], 
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Middleware para forzar charset=utf-8 en todas las respuestas JSON
+@app.middleware("http")
+async def add_charset_to_json_response(request, call_next):
+    response = await call_next(request)
+    content_type = response.headers.get("content-type", "")
+    if "application/json" in content_type and "charset" not in content_type:
+        response.headers["content-type"] = "application/json; charset=utf-8"
+    return response
 
 # ---------------------------------------------------------
 # 2. IMPORTACIONES LOCALES
@@ -102,7 +121,7 @@ async def obtener_onboarding(usuario: dict = Depends(verificar_token)):
 
 # RUTA 1c: Radar de oportunidades (clima + feriados/festividades + reglas simples)
 @app.get("/api/forecast")
-async def obtener_forecast(usuario: dict = Depends(verificar_token)):
+async def obtener_forecast(days: int = 90, usuario: dict = Depends(verificar_token)):
     if db is None:
         raise HTTPException(status_code=500, detail="Servicio de base de datos no disponible")
 
@@ -117,8 +136,25 @@ async def obtener_forecast(usuario: dict = Depends(verificar_token)):
             detail="Aún no completaste el onboarding. Completa tu ADN de marca primero."
         )
 
-    brand_adn = OnboardingData(**doc.to_dict())
-    opportunities = await get_forecast(location=brand_adn.ubicacion)
+    brand_dict = doc.to_dict()
+    brand_adn = OnboardingData(**brand_dict)
+
+    lat = brand_dict.get("latitude")
+    lon = brand_dict.get("longitude")
+
+    if lat is None or lon is None:
+        from services.forecast_service import geocode_location
+        lat, lon = await geocode_location(brand_adn.ubicacion)
+        if lat is not None and lon is not None:
+            await anyio.to_thread.run_sync(doc_ref.update, {"latitude": lat, "longitude": lon})
+
+    opportunities = await get_forecast(
+        location=brand_adn.ubicacion,
+        days_ahead=days,
+        nicho_negocio=brand_adn.nicho_negocio,
+        latitude=lat,
+        longitude=lon
+    )
 
     return {
         "location": brand_adn.ubicacion,

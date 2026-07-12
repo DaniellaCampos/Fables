@@ -1,4 +1,6 @@
-import Sidebar from '../components/dashboard/Sidebar';
+import { useNavigate } from 'react-router-dom';
+import { Sliders } from 'lucide-react';
+import { Badge, Button } from '../components/ui';
 import BrandDNACard from '../components/dashboard/BrandDNACard';
 import SocialStatsCard from '../components/dashboard/SocialStatsCard';
 import OpportunityRadarCard from '../components/dashboard/OpportunityRadarCard';
@@ -13,26 +15,30 @@ const todayLabel = new Date().toLocaleDateString('es-ES', {
 
 export default function MiMarca() {
   const { brand } = useApp();
+  const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-cream font-sans">
-      <Sidebar />
-
-      <main className="md:pl-32 px-6 md:pr-10 py-10 pb-40 md:pb-10">
-        <header className="mb-10">
-          <h1 className="font-display text-4xl md:text-5xl font-semibold text-charcoal">
+    <div className="page">
+      <header className="page-heading split">
+        <div>
+          <Badge tone="teal">TU MARCA HOY</Badge>
+          <h1 className="capitalize">
             Tu marca hoy, {brand.name} ☀️
           </h1>
           <p className="mt-2 font-sans text-gray-warm-500 capitalize">{todayLabel}</p>
-        </header>
-
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-          <BrandDNACard className="md:col-span-6 md:row-span-2" />
-          <SocialStatsCard className="md:col-span-6" />
-          <OpportunityRadarCard className="md:col-span-6" />
-          <ContentCalendarCard className="md:col-span-12" />
         </div>
-      </main>
+        <Button onClick={() => navigate('/brand/editar')}>
+          <Sliders size={16} />
+          Editar negocio
+        </Button>
+      </header>
+
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+        <BrandDNACard className="md:col-span-6 md:row-span-2" />
+        <SocialStatsCard className="md:col-span-6" />
+        <OpportunityRadarCard className="md:col-span-6" />
+        <ContentCalendarCard className="md:col-span-12" />
+      </div>
     </div>
   );
 }
