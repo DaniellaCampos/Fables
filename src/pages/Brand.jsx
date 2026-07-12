@@ -4,6 +4,7 @@ import {Check,Save,ArrowLeft} from 'lucide-react';
 import {audiences,brandStyles} from '../mocks/data';
 import {useApp} from '../context/AppContext';
 import {Badge,Button,ChoiceGrid,Field,SelectField} from '../components/ui';
+import {updateOnboarding} from '../services/api';
 
 export default function Brand(){
   const {brand,updateBrand}=useApp();
@@ -13,10 +14,43 @@ export default function Brand(){
 
   const set=(k,v)=>setData(d=>({...d,[k]:v}));
   const toggle=(k,v)=>set(k,data[k].includes(v)?data[k].filter(x=>x!==v):[...data[k],v]);
-  const save=()=>{
-    updateBrand(data);
-    setSaved(true);
-    setTimeout(()=>setSaved(false),2200);
+  const save=async()=>{
+    try {
+      const payload={
+        name: data.name || '',
+        nicho_negocio: data.service || 'Paseos en lancha',
+        ubicacion: data.location || 'Lago de Ilopango',
+        language: data.language || 'Español',
+        color_hex: data.primary || '#0b6670',
+        secondary_color: data.secondary || '#e85f3d',
+        audiences: data.audiences || [],
+        
+        arquetipo_marca: brand.arquetipo_marca || "Explorador",
+        proposito_marca: brand.proposito_marca || data.description || "porque si",
+        enemigo_marca: brand.enemigo_marca || "la gente",
+        tono_voz: brand.tono_voz || "Formal",
+        emocion_objetivo: brand.emocion_objetivo || "Confianza",
+        cliente_ideal: data.audiences && data.audiences.length ? data.audiences.join(', ') : "Familias",
+        vibra_marca: (data.styles && data.styles[0]) || "Aventurera"
+      };
+
+      await updateOnboarding(payload);
+      
+      updateBrand({
+        ...data,
+        arquetipo_marca: payload.arquetipo_marca,
+        proposito_marca: payload.proposito_marca,
+        enemigo_marca: payload.enemigo_marca,
+        tono_voz: payload.tono_voz,
+        emocion_objetivo: payload.emocion_objetivo
+      });
+
+      setSaved(true);
+      setTimeout(()=>setSaved(false),2200);
+    } catch (err) {
+      console.error("Error al actualizar marca:", err);
+      alert("Hubo un problema al guardar los cambios en la base de datos de Firebase.");
+    }
   };
 
   return (

@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import { ArrowLeft, ArrowRight, ImagePlus, Trash2, UploadCloud, Sparkles, Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { mockImages } from '../mocks/data';
+import { mockImages, trendImages } from '../mocks/data';
 import { useApp } from '../context/AppContext';
 import { Badge, Button } from '../components/ui';
 
@@ -16,16 +16,6 @@ export default function Upload() {
   const [campaignWhy, setCampaignWhy] = useState('');
   const [campaignObjective, setCampaignObjective] = useState('Vender');
 
-  // Pinterest-style trend images reference
-  const trendImages = [
-    { id: 't1', tag: 'Aventura', title: 'Paseo en lancha', url: 'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?auto=format&fit=crop&w=400&q=80' },
-    { id: 't2', tag: 'Desconectar', title: 'Hamaca frente al lago', url: 'https://images.unsplash.com/photo-1519046904884-53103b34b206?auto=format&fit=crop&w=400&q=80' },
-    { id: 't3', tag: 'Gastronomía', title: 'Café frío de autor', url: 'https://images.unsplash.com/photo-1498804103079-a6351b050096?auto=format&fit=crop&w=400&q=80' },
-    { id: 't4', tag: 'Relajación', title: 'Piscina infinita', url: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=400&q=80' },
-    { id: 't5', tag: 'Atardecer', title: 'Fogata nocturna', url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80' },
-    { id: 't6', tag: 'Amigos', title: 'Tarde de risas', url: 'https://images.unsplash.com/photo-1506869640319-fe1a24fd76dc?auto=format&fit=crop&w=400&q=80' }
-  ];
-
   const addMock = () => {
     const available = mockImages.filter(m => !images.some(i => i.id === m.id));
     if (available[0]) {
@@ -34,16 +24,29 @@ export default function Upload() {
   };
 
   const addFiles = (files) => {
-    const next = [...files].map((f, i) => ({
-      id: `local-${Date.now()}-${i}`,
-      name: f.name,
-      tag: 'Nueva imagen',
-      url: URL.createObjectURL(f)
-    }));
-    const updated = [...images, ...next];
-    setImages(updated);
-    // Auto-select the newly uploaded image index
-    setProject(p => ({ ...p, selectedImage: updated.length - 1 }));
+    const promises = [...files].map(file => {
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          resolve({
+            id: `local-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
+            name: file.name,
+            tag: 'Nueva imagen',
+            url: reader.result
+          });
+        };
+        reader.readAsDataURL(file);
+      });
+    });
+
+    Promise.all(promises).then(next => {
+      // Conservar únicamente las imágenes subidas por el usuario
+      const userImages = images.filter(img => img.id.startsWith('local-'));
+      const updated = [...userImages, ...next];
+      setImages(updated);
+      // Auto-select the newly uploaded image index
+      setProject(p => ({ ...p, selectedImage: updated.length - 1 }));
+    });
   };
 
   const addTrendImage = (trend) => {
@@ -293,7 +296,7 @@ export default function Upload() {
               >
                 <img 
                   src={trend.url} 
-                  alt={trend.title} 
+                  alt={trend.name} 
                   style={{ width: '100%', display: 'block', objectFit: 'cover' }} 
                 />
                 <div style={{
@@ -318,7 +321,7 @@ export default function Upload() {
                   }}>
                     {trend.tag}
                   </span>
-                  <b style={{ fontSize: '0.85rem', fontWeight: '700' }}>{trend.title}</b>
+                  <b style={{ fontSize: '0.85rem', fontWeight: '700' }}>{trend.name}</b>
                 </div>
                 <div className="plus-overlay" style={{
                   position: 'absolute',

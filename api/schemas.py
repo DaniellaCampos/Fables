@@ -34,3 +34,22 @@ class ClosetGenerateRequest(BaseModel):
     idea_usuario: str        # Ej: "Promo de fin de semana"
     formato: str             # Ej: "Post de Instagram"
     objetivo: str            # Ej: "Vender"
+
+
+# Modelo para registrar telemetría del radar de oportunidades (Fase 2)
+class OpportunityActionLog(BaseModel):
+    date_logged: str         # Timestamp ISO de la acción
+    opportunity_date: str    # Fecha de la oportunidad sobre la que se actuó
+    signals_active: List[str] # Señales activas ej: ["holiday", "weekend", "sunny"]
+    action: str              # Acción realizada ej: "clicked_cta"
+
+
+# Modelo para guardar un diseño del Closet en Firestore (Fase 3)
+class DesignData(BaseModel):
+    name: str
+    format: str
+    imageUrl: str
+    projectSettings: dict
+    campaignCopy: Optional[str] = None
+    campaignHashtags: Optional[List[str]] = None
+    campaignMusic: Optional[str] = None

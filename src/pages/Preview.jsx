@@ -8,9 +8,9 @@ import { Badge, Button } from '../components/ui';
 import { toPng } from 'html-to-image';
 
 export default function Preview() {
-  const { project, brand, saveDesign } = useApp();
+  const { project, setProject, brand, saveDesign, campaign } = useApp();
   const [toast, setToast] = useState('');
-  const [designName, setDesignName] = useState('Fin de semana en el lago');
+  const [designName, setDesignName] = useState(project.name || 'Mi nuevo diseño');
   const [saving, setSaving] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const nav = useNavigate();
@@ -32,8 +32,27 @@ export default function Preview() {
     if (saving) return;
     setSaving(true);
     notify('Guardando en tu colección...');
+
+    let thumbnail = null;
+    const element = document.querySelector('.design-preview');
+    if (element) {
+      try {
+        thumbnail = await toPng(element, {
+          cacheBust: true,
+          pixelRatio: 1, // smaller ratio for fast saving
+          style: {
+            transform: 'none',
+            margin: '0',
+            borderRadius: '0',
+          }
+        });
+      } catch (e) {
+        console.warn('Failed to capture save design thumbnail:', e);
+      }
+    }
+
     try {
-      await saveDesign(designName);
+      await saveDesign(designName, thumbnail);
       notify('¡Diseño guardado con éxito! Redirigiendo...');
       setTimeout(() => {
         nav('/designs');
@@ -108,7 +127,10 @@ export default function Preview() {
             <input 
               type="text" 
               value={designName} 
-              onChange={(e) => setDesignName(e.target.value)} 
+              onChange={(e) => {
+                setDesignName(e.target.value);
+                setProject(p => ({ ...p, name: e.target.value }));
+              }} 
               placeholder="Ej. Promo Croissant Domingo"
               style={{
                 padding: '0.65rem 0.85rem',
@@ -126,7 +148,7 @@ export default function Preview() {
             />
           </div>
 
-          <dl>
+          <dl style={{ marginBottom: '1.5rem' }}>
             {meta.map(([a, b]) => (
               <div key={a}>
                 <dt>{a}</dt>
@@ -135,7 +157,70 @@ export default function Preview() {
             ))}
           </dl>
 
-          <Button onClick={handleSave} disabled={saving} style={{ gap: '8px' }}>
+          {/* Recomendaciones de publicación */}
+          {campaign && (campaign.instagram_copy || campaign.suggested_music) && (
+            <div className="campaign-metadata-box" style={{
+              background: '#fbf7ed',
+              border: '1px solid #e2d9c2',
+              borderRadius: '16px',
+              padding: '16px',
+              marginBottom: '1.5rem',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '12px',
+              textAlign: 'left'
+            }}>
+              {/* Música */}
+              {campaign.suggested_music && (
+                <div>
+                  <span style={{ fontSize: '0.65rem', fontWeight: 'bold', color: 'var(--yellow-ink)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: '2px' }}>
+                    🎵 AUDIO / MÚSICA RECOMENDADA
+                  </span>
+                  <p style={{ fontSize: '0.78rem', color: '#172a35', margin: 0, fontWeight: '600', lineHeight: '1.3' }}>
+                    {campaign.suggested_music}
+                  </p>
+                </div>
+              )}
+
+              {/* Copy */}
+              {campaign.instagram_copy && (
+                <div>
+                  <span style={{ fontSize: '0.65rem', fontWeight: 'bold', color: '#0b6670', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: '4px' }}>
+                    📝 DESCRIPCIÓN PARA COPIAR
+                  </span>
+                  <div style={{
+                    background: '#ffffff',
+                    border: '1px solid #e2d9c2',
+                    borderRadius: '8px',
+                    padding: '8px 10px',
+                    fontSize: '0.78rem',
+                    color: '#172a35',
+                    lineHeight: '1.4',
+                    maxHeight: '90px',
+                    overflowY: 'auto',
+                    whiteSpace: 'pre-wrap',
+                    fontFamily: 'inherit'
+                  }}>
+                    {campaign.instagram_copy}
+                  </div>
+                </div>
+              )}
+
+              {/* Hashtags */}
+              {campaign.hashtags && campaign.hashtags.length > 0 && (
+                <div>
+                  <span style={{ fontSize: '0.65rem', fontWeight: 'bold', color: '#0b6670', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: '2px' }}>
+                    🏷️ HASHTAGS
+                  </span>
+                  <p style={{ fontSize: '0.75rem', color: '#5a6e79', margin: 0, lineHeight: '1.3' }}>
+                    {campaign.hashtags.map(tag => `#${tag}`).join(' ')}
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+
+          <Button onClick={handleSave} disabled={saving} style={{ gap: '8px', width: '100%', marginBottom: '8px' }}>
             <Save size={16} />
             {saving ? 'Guardando...' : 'Guardar diseño'}
           </Button>

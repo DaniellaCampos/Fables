@@ -55,8 +55,16 @@ export const categoryDefs = [
     label: 'Imagen',
     icon: '▧',
     key: 'selectedImage',
-    direct: true,
+    direct: false,
     description: 'Fotografía principal'
+  },
+  {
+    id: 'trends',
+    label: 'Tendencias',
+    icon: '📌',
+    key: 'selectedTrend',
+    direct: false,
+    description: 'Referencias visuales (estilo Pinterest)'
   },
   {
     id: 'typography',

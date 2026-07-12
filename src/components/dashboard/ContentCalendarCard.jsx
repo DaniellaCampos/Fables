@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { getForecast } from '../../services/api';
+import { useApp } from '../../context/AppContext';
 
 /**
  * @typedef {Object} DummyPost
@@ -134,14 +135,37 @@ function ForecastChip({ opportunity, isBest }) {
   );
 }
 
+function getAssignment(opp, day) {
+  if (!opp) return 'Publicar contenido';
+  const reason = opp.reason.toLowerCase();
+  if (reason.includes('historia')) return 'Publicar una Historia';
+  if (reason.includes('post')) return 'Publicar un Post';
+  if (reason.includes('carrusel')) return 'Publicar un Carrusel';
+  
+  // Fallback por día de la semana (fines de semana historias, entre semana posts)
+  const dayOfWeek = day.getDay();
+  if (dayOfWeek === 0 || dayOfWeek === 6) {
+    return 'Publicar una Historia';
+  }
+  return 'Publicar un Post';
+}
+
 function DayPopover({ day, opportunity, onClose, onCreate }) {
+  const assignment = getAssignment(opportunity, day);
+
   return (
     <div className="day-popover absolute z-30 top-full mt-1 left-0 w-56 bg-charcoal text-cream rounded-xl p-3 shadow-2xl">
       <p className="text-xs text-cream/70 mb-2">
         {day.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}
       </p>
       {opportunity && (
-        <p className="text-xs text-hero mb-2">⚡ {opportunity.reason} — {opportunity.suggestedTimeSlot}</p>
+        <div className="mb-3">
+          <p className="text-xs text-hero mb-1">⚡ {opportunity.reason}</p>
+          <p className="text-xs text-cream/90 mb-1">⏱️ Horario sugerido: {opportunity.suggestedTimeSlot}</p>
+          <p className="text-xs font-semibold text-[#f5c945]" style={{ color: '#f5c945', marginTop: '6px' }}>
+            🎯 Asignación: {assignment}
+          </p>
+        </div>
       )}
       <button
         onClick={onCreate}
@@ -160,6 +184,7 @@ function DayPopover({ day, opportunity, onClose, onCreate }) {
 }
 
 export default function ContentCalendarCard({ className = '' }) {
+  const { brand } = useApp();
   const [view, setView] = useState('month'); // 'month' | 'week'
   const [cursor, setCursor] = useState(() => startOfDay(new Date()));
   const [forecastByDate, setForecastByDate] = useState({});
@@ -186,7 +211,7 @@ export default function ContentCalendarCard({ className = '' }) {
         setBestDate(null);
       }
     })();
-  }, []);
+  }, [brand.location, brand.service]);
 
   useEffect(() => {
     if (!openPopoverKey) return;

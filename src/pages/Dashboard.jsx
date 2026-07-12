@@ -6,7 +6,7 @@ import { Badge, Button, Card } from '../components/ui';
 import { getForecast } from '../services/api';
 
 export default function Dashboard() {
-  const { brand, savedDesigns, setProject } = useApp();
+  const { brand, savedDesigns, setProject, setCampaign } = useApp();
   const nav = useNavigate();
   const [opportunity, setOpportunity] = useState(null);
 
@@ -50,8 +50,16 @@ export default function Dashboard() {
 
   const handleOpenRecent = () => {
     if (latestDesign && latestDesign.projectSettings) {
-      setProject(latestDesign.projectSettings);
+      setProject({
+        ...latestDesign.projectSettings,
+        name: latestDesign.name
+      });
     }
+    setCampaign({
+      instagram_copy: latestDesign?.campaignCopy || '',
+      hashtags: latestDesign?.campaignHashtags || [],
+      suggested_music: latestDesign?.campaignMusic || ''
+    });
     nav('/create/preview');
   };
 
@@ -196,7 +204,7 @@ export default function Dashboard() {
         </div>
         
         <div className="action-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '20px' }}>
-          {actions.map(([Icon, title, desc, path], i) => (
+          {actions.map(([Icon, title, desc, path]) => (
             <button 
               key={title} 
               className="action-card" 
