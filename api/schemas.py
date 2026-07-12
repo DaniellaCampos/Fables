@@ -31,7 +31,6 @@ class OnboardingData(BaseModel):
 
 # Modelo para la generación de campaña en el Armario
 class ClosetGenerateRequest(BaseModel):
-    usuario_id: str          # ID único del usuario para consultar su ADN de marca en Firestore
     idea_usuario: str        # Ej: "Promo de fin de semana"
     formato: str             # Ej: "Post de Instagram"
     objetivo: str            # Ej: "Vender"

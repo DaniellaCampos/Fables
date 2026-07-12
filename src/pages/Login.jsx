@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
+import { getOnboarding } from '../services/api';
 import coffeeImage from '../assets/iced_coffee.png';
 import '../styles/Login.css';
 
 export default function Login() {
   const navigate = useNavigate();
-  const { login, signInWithEmail, signUpWithEmail } = useApp();
+  const { login, signInWithEmail, signUpWithEmail, updateBrand } = useApp();
   
   // Single-page views: 'landing', 'login', 'register'
   const [view, setView] = useState('landing');
@@ -19,13 +20,54 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
+  // Check if user already completed onboarding, otherwise send them to /onboarding
+  const checkOnboardingAndRedirect = async () => {
+    // 1. Check local storage first (instant redirect)
+    const localBrand = localStorage.getItem('cc-brand');
+    if (localBrand) {
+      navigate('/dashboard');
+      return;
+    }
+
+    // 2. Try to fetch from backend Firestore
+    try {
+      const brandData = await getOnboarding();
+      if (brandData) {
+        const remoteBrand = {
+          name: brandData.nicho_negocio || "Mi Negocio",
+          service: brandData.nicho_negocio || "Paseos en lancha",
+          description: brandData.proposito_marca || "",
+          location: brandData.ubicacion || "Lago de Ilopango",
+          audiences: brandData.cliente_ideal ? brandData.cliente_ideal.split(', ') : ["Familias"],
+          styles: [brandData.vibra_marca || "Aventurera"],
+          primary: brandData.color_hex || "#0b6670",
+          secondary: "#e85f3d",
+          language: "Español",
+          arquetipo_marca: brandData.arquetipo_marca || "Explorador",
+          proposito_marca: brandData.proposito_marca || "",
+          enemigo_marca: brandData.enemigo_marca || "",
+          tono_voz: brandData.tono_voz || "Cercano",
+          emocion_objetivo: brandData.emocion_objetivo || "Confianza"
+        };
+        updateBrand(remoteBrand);
+        navigate('/dashboard');
+        return;
+      }
+    } catch (err) {
+      console.warn("No remote onboarding found or API error:", err);
+    }
+
+    // 3. Go to onboarding if not found anywhere
+    navigate('/onboarding');
+  };
+
   // Handle Google Sign In
   const handleGoogleSignIn = async () => {
     setError(null);
     setLoading(true);
     try {
       await login();
-      navigate('/onboarding');
+      await checkOnboardingAndRedirect();
     } catch (err) {
       console.error("Error Google Auth:", err);
       const errMsg = err.message || '';
@@ -55,7 +97,7 @@ export default function Login() {
     setLoading(true);
     try {
       await signInWithEmail(email, password);
-      navigate('/onboarding');
+      await checkOnboardingAndRedirect();
     } catch (err) {
       console.error("Error Email Login:", err);
       const errMsg = err.message || '';

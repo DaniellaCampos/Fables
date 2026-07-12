@@ -1,5 +1,6 @@
 import os
 import anyio
+from datetime import datetime
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
@@ -38,15 +39,10 @@ class UTF8JSONResponse(JSONResponse):
 
 app = FastAPI(title="Hackathon Backend - Creator's Closet", default_response_class=UTF8JSONResponse)
 
-# Configuración CORS para que React pueda comunicarse sin bloqueos
+# Configuración CORS para que React pueda comunicarse sin bloqueos desde cualquier origen (local o de red)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-        "http://localhost:5174",
-        "http://127.0.0.1:5174",
-    ], 
+    allow_origin_regex="https?://.*",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -90,9 +86,10 @@ async def guardar_onboarding(datos: OnboardingData, usuario: dict = Depends(veri
     uid = usuario["uid"]
     
     try:
-        # Guardar en Firestore de forma asíncrona para no bloquear el event loop
+        # Guardar en Firestore de forma asíncrona para no bloquear el event loop.
+        # Usamos merge=True para que las actualizaciones parciales no borren campos previos.
         doc_ref = db.collection("usuarios").document(uid)
-        await anyio.to_thread.run_sync(doc_ref.set, datos.dict())
+        await anyio.to_thread.run_sync(doc_ref.set, datos.dict(), merge=True)
         
         return {"mensaje": "ADN de marca guardado con éxito", "uid_procesado": uid}
     except Exception as e:
@@ -165,14 +162,14 @@ async def obtener_forecast(days: int = 90, usuario: dict = Depends(verificar_tok
 
 # RUTA 2: El Armario - Generación de campaña completa (IA + Imágenes)
 @app.post("/api/closet/generate")
-async def generar_contenido(peticion: ClosetGenerateRequest):
+async def generar_contenido(peticion: ClosetGenerateRequest, usuario: dict = Depends(verificar_token)):
     if db is None:
         raise HTTPException(status_code=500, detail="Servicio de base de datos no disponible")
 
-    usuario_id = peticion.usuario_id
+    usuario_id = usuario["uid"]
 
     try:
-        # 1. Leer el documento del usuario en Firestore
+        # 1. Leer el documento del usuario en Firestore usando el UID autenticado
         doc_ref = db.collection("usuarios").document(usuario_id)
         doc = await anyio.to_thread.run_sync(doc_ref.get)
         

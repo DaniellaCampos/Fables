@@ -91,7 +91,7 @@ export function AppProvider({ children }) {
     }
   };
 
-  const saveDesign = async (designName) => {
+  const saveDesign = async (designName, dataUrl) => {
     const uid = user?.uid || 'mock-user-12345';
     // Get currently selected image URL
     const activeImage = images[project.selectedImage] || images[0];
@@ -99,7 +99,7 @@ export function AppProvider({ children }) {
     const designData = {
       name: designName || 'Diseño sin título',
       format: project.format || 'story',
-      imageUrl: activeImage?.url || 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=700&q=80',
+      imageUrl: dataUrl || activeImage?.url || 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=700&q=80',
       projectSettings: { ...project }
     };
 

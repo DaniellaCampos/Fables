@@ -8,16 +8,16 @@ To run the application locally, you will need to start both the backend server a
 
 ### 1. Start the Backend (Python FastAPI)
 
-FastAPI runs on port `8000`. Make sure you have your virtual environment activated and run the following command:
+FastAPI runs on port `8000`. Install Python dependencies and start the server:
 
 ```bash
-uvicorn main:app --reload
+pip install -r requirements.txt
+python -m uvicorn main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-*Note for Windows*: If your virtual environment is located at `.venv` and not currently activated in your terminal, you can start the server directly using:
-```powershell
-.venv\Scripts\uvicorn main:app --reload
-```
+> **Importante:** usa `--host 0.0.0.0` si accedes al frontend por IP de red (ej. `http://10.74.10.88:5173`). Sin esto, el Armario no podrá conectar con la API.
+
+También necesitas un archivo `.env` en la raíz con al menos `GROQ_API_KEY`, y `firebase_credenciales.json` para guardar el ADN de marca.
 
 ### 2. Start the Frontend (React + Vite)
 
@@ -32,3 +32,7 @@ npm run dev
 ```
 
 Open your browser at [http://localhost:5173](http://localhost:5173).
+
+### Acceso por red local
+
+Si abres la app desde otro dispositivo o por IP (`http://10.74.10.88:5173`), el frontend intentará llamar a la API en `http://10.74.10.88:8000`. Ambos servidores deben estar corriendo en la misma máquina.

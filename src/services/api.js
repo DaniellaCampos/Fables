@@ -9,14 +9,14 @@ const getApiBaseUrl = () => {
   return `http://${hostname}:8000`;
 };
 
-const API_BASE_URL = getApiBaseUrl();
+const getBaseUrl = () => getApiBaseUrl();
 
 /**
  * Función auxiliar para realizar peticiones HTTP a la API FastAPI de manera limpia y asíncrona,
  * inyectando de forma automática el Bearer Token de Firebase si el usuario está autenticado.
  */
 async function request(endpoint, options = {}) {
-  const url = `${API_BASE_URL}${endpoint}`;
+  const url = `${getBaseUrl()}${endpoint}`;
   
   // Obtener el token de autenticación (real o mock)
   const token = await getAuthToken();
@@ -56,21 +56,34 @@ async function request(endpoint, options = {}) {
  * Guarda los datos de marca del usuario en Firestore a través del backend.
  * @param {Object} brandData Datos de onboarding recolectados
  */
+function buildOnboardingPayload(brandData) {
+  const audiences = brandData.audiences || brandData.cliente_ideal?.split(',').map(s => s.trim()).filter(Boolean) || [];
+  const defaultImage = brandData.styles?.[0] || brandData.vibra_marca || "Profesional";
+
+  return {
+    nicho_negocio: brandData.nicho_negocio || brandData.service || "Negocio",
+    cliente_ideal: brandData.cliente_ideal || audiences.join(', ') || "General",
+    ubicacion: brandData.ubicacion || brandData.location || "San Salvador",
+    color_hex: brandData.color_hex || brandData.primary || "#0b6670",
+    vibra_marca: brandData.vibra_marca || defaultImage || "Profesional",
+    arquetipo_marca: brandData.arquetipo_marca || brandData.arquetipo || "Explorador",
+    proposito_marca: brandData.proposito_marca || brandData.description || "Ofrecer experiencias memorables a nuestros clientes.",
+    enemigo_marca: brandData.enemigo_marca || "El servicio impersonal y genérico.",
+    tono_voz: brandData.tono_voz || "Cercano",
+    emocion_objetivo: brandData.emocion_objetivo || "Confianza",
+    name: brandData.name,
+    secondary_color: brandData.secondary_color || brandData.secondary,
+    language: brandData.language,
+    audiences: audiences,
+    latitude: brandData.latitude,
+    longitude: brandData.longitude,
+  };
+}
+
 export async function saveOnboarding(brandData) {
   // El backend espera el esquema completo de OnboardingData, incluyendo el
   // "ADN psicologico" de marca (arquetipo, proposito, enemigo, tono, emocion).
-  const payload = {
-    nicho_negocio: brandData.service || "Negocio",
-    cliente_ideal: brandData.audiences?.join(", ") || "General",
-    ubicacion: brandData.location || "San Salvador",
-    color_hex: brandData.primary || "#0b6670",
-    vibra_marca: brandData.styles?.[0] || "Profesional",
-    arquetipo_marca: brandData.arquetipo_marca || "Explorador",
-    proposito_marca: brandData.proposito_marca || "Ofrecer experiencias memorables a nuestros clientes.",
-    enemigo_marca: brandData.enemigo_marca || "El servicio impersonal y genérico.",
-    tono_voz: brandData.tono_voz || "Cercano",
-    emocion_objetivo: brandData.emocion_objetivo || "Confianza"
-  };
+  const payload = buildOnboardingPayload(brandData);
 
   return await request("/api/onboarding", {
     method: "POST",
@@ -93,9 +106,10 @@ export async function getOnboarding() {
  * @param {import('../components/dashboard/BrandDNACard').OnboardingData} data
  */
 export async function updateOnboarding(data) {
+  const payload = data?.nicho_negocio ? data : buildOnboardingPayload(data);
   return await request("/api/onboarding", {
     method: "POST",
-    body: JSON.stringify(data)
+    body: JSON.stringify(payload)
   });
 }
 
@@ -109,9 +123,8 @@ export async function getForecast() {
 /**
  * Genera la campaña creativa (IA + Imágenes) enviando el ID del usuario y los detalles de la idea.
  */
-export async function generateCampaign({ usuario_id, idea_usuario, formato, objetivo }) {
+export async function generateCampaign({ idea_usuario, formato, objetivo }) {
   const payload = {
-    usuario_id,
     idea_usuario: idea_usuario || "Promo de fin de semana",
     formato: formato || "Post de Instagram",
     objetivo: objetivo || "Vender"

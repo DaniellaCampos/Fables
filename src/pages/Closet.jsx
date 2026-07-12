@@ -38,13 +38,15 @@ export default function Closet() {
     user, 
     campaign, 
     setCampaign,
-    saveDesign
+    saveDesign,
+    brand
   } = useApp();
   const nav = useNavigate();
   const location = useLocation();
 
-  const [stage, setStage] = useState('recommendation');
-  const [formatIndex, setFormatIndex] = useState(Math.max(0, formats.findIndex(f => f.id === project.format)));
+  const initialFormatId = location.state?.format || project.format || 'story';
+  const [stage, setStage] = useState(location.state?.skipRecommendation ? 'template' : 'recommendation');
+  const [formatIndex, setFormatIndex] = useState(Math.max(0, formats.findIndex(f => f.id === initialFormatId)));
   const [templateIndex, setTemplateIndex] = useState(project.selectedTemplate || 0);
   const [activeIndex, setActiveIndex] = useState(0);
 
@@ -68,8 +70,27 @@ export default function Closet() {
     if (saving) return;
     setSaving(true);
     notify('Guardando en tu colección...');
+
+    let thumbnail = null;
+    const element = document.querySelector('.design-preview');
+    if (element) {
+      try {
+        thumbnail = await toPng(element, {
+          cacheBust: true,
+          pixelRatio: 1, // smaller ratio for fast saving
+          style: {
+            transform: 'none',
+            margin: '0',
+            borderRadius: '0',
+          }
+        });
+      } catch (e) {
+        console.warn('Failed to capture save design thumbnail:', e);
+      }
+    }
+
     try {
-      await saveDesign(designName);
+      await saveDesign(designName, thumbnail);
       notify('¡Diseño guardado con éxito! Redirigiendo...');
       setTimeout(() => {
         nav('/designs');
@@ -124,7 +145,9 @@ export default function Closet() {
   const [idea, setIdea] = useState(
     location.state?.inspiration || "Lanzamiento de croissants de chocolate calientes los domingos"
   );
-  const [objective, setObjective] = useState("Vender");
+  const [objective, setObjective] = useState(
+    location.state?.objective || project.objective || "Vender"
+  );
   const [loading, setLoading] = useState(false);
   const [loadingMsg, setLoadingMsg] = useState("");
 
@@ -133,6 +156,19 @@ export default function Closet() {
     () => templates.filter(t => t.formats.includes(selectedFormat.id)),
     [selectedFormat.id]
   );
+
+  // Inject user custom brand colors dynamically into the 'brand' palette option
+  const dynamicPalettes = useMemo(() => {
+    return palettes.map(p => {
+      if (p.id === 'brand') {
+        return {
+          ...p,
+          colors: [brand?.primary || '#0b6670', brand?.secondary || '#e85f3d', '#fff9ee']
+        };
+      }
+      return p;
+    });
+  }, [brand]);
 
   // Lista dinámica de títulos incluyendo el generado por IA
   const headlinesList = useMemo(() => {
@@ -157,7 +193,7 @@ export default function Closet() {
       image: images,
       typography: typographies,
       filter: filters,
-      palette: palettes,
+      palette: dynamicPalettes,
       headline: headlinesList, // Inyección de copy dinámico
       decoration: decorations,
       textPosition: textPositions,
@@ -168,7 +204,7 @@ export default function Closet() {
       ...cat,
       items: itemMap[cat.id] || []
     }));
-  }, [images, headlinesList]);
+  }, [images, headlinesList, dynamicPalettes]);
 
   const activeCategory = categories[activeIndex];
   const candidateIndex =
@@ -290,7 +326,6 @@ export default function Closet() {
     try {
       setLoadingMsg("La Inteligencia Artificial (Groq Llama 3) está redactando tu campaña...");
       const result = await generateCampaign({
-        usuario_id: user?.uid || "mock-user-12345",
         idea_usuario: idea,
         formato: selectedFormat.name,
         objetivo: objective
@@ -298,7 +333,7 @@ export default function Closet() {
 
       setLoadingMsg("Buscando 3 imágenes estéticas de alta calidad en Unsplash...");
       
-      // Inyectar imágenes devueltas por la API en el AppContext
+      // Inyectar imágenes devueltas por la API en el AppContext sin borrar las del usuario
       if (result.images && result.images.length > 0) {
         const formattedImages = result.images.map((url, i) => ({
           id: `unsplash-${Date.now()}-${i}`,
@@ -306,14 +341,30 @@ export default function Closet() {
           tag: 'Sugerida ✨',
           url: url
         }));
-        setImages(formattedImages);
+        setImages(prev => {
+          const currentImages = Array.isArray(prev) ? prev : [];
+          const filteredNew = formattedImages.filter(f => !currentImages.some(img => img.url === f.url));
+          return [...currentImages, ...filteredNew];
+        });
       }
 
       // Guardar el copy e información en el estado de la campaña
       setCampaign(result);
     } catch (error) {
       console.error("Error al conectar con API de generación:", error);
-      alert("No se pudo conectar al servidor FastAPI. El Armario se cargará con datos simulados (mocks) para la demostración.");
+      const apiHost = window.location.hostname || 'localhost';
+      if (error.status === 404) {
+        alert("No encontramos tu ADN de marca en el servidor. Completa el onboarding primero y vuelve al Armario.");
+      } else if (error.status === 500) {
+        alert(`El servidor respondió con un error interno: ${error.message || 'revisa la consola del backend'}`);
+      } else {
+        alert(
+          `No se pudo conectar al servidor FastAPI en http://${apiHost}:8000.\n\n` +
+          "Asegúrate de tener el backend corriendo:\n" +
+          "python -m uvicorn main:app --reload --host 0.0.0.0 --port 8000\n\n" +
+          "El Armario se cargará con datos simulados (mocks)."
+        );
+      }
     } finally {
       setLoading(false);
       setStage('closet');
@@ -513,9 +564,9 @@ export default function Closet() {
   if (stage === 'template') {
     return (
       <div className="page closet-page guided-stage">
-        <button className="text-button stage-back" onClick={() => setStage('recommendation')}>
+        <button className="text-button stage-back" onClick={() => nav('/create/upload')}>
           <ArrowLeft />
-          Cambiar formato
+          Volver a subir fotos
         </button>
 
         <header className="page-heading centered">
@@ -675,6 +726,46 @@ export default function Closet() {
                       closetRecommendations[activeCategory?.id] ||
                       ''}
                 </p>
+
+                {activeCategory?.id === 'palette' && (
+                  <div style={{
+                    marginTop: '12px',
+                    padding: '12px',
+                    background: '#fbf7ed',
+                    border: '1px solid #e2d9c2',
+                    borderRadius: '12px',
+                    fontSize: '0.82rem',
+                    lineHeight: '1.45',
+                    color: '#5a6e79'
+                  }}>
+                    <b style={{ color: 'var(--yellow-ink)', display: 'block', marginBottom: '4px' }}>
+                      💡 Tendencia y Explicación de Colores:
+                    </b>
+                    {(() => {
+                      const pal = activeCategory?.items[candidateIndex];
+                      if (!pal) return null;
+                      
+                      switch (pal.id) {
+                        case 'brand':
+                          return `Usa tus colores de marca (${brand?.primary || ''} y ${brand?.secondary || ''}) y una base crema. Ideal para asegurar el reconocimiento instantáneo de tu logotipo e identidad.`;
+                        case 'warm':
+                          return 'Tendencia Enérgica. Fusión de rojo y naranja. Estimula el entusiasmo, abre el apetito y genera una vibra alegre, ideal para promociones gastronómicas.';
+                        case 'natural':
+                          return 'Tendencia Eco-Orgánica. Tonos de bosque y campo. Representa la naturaleza y la tranquilidad, perfecta para ecoturismo, tours ecológicos y desconexión.';
+                        case 'lake':
+                          return `Tendencia de Aventura Acuática. Tonos azules profundos y dorados inspirados en ${brand?.location || 'tu zona'}. Transmite frescura, confianza y espíritu libre.`;
+                        case 'contrast':
+                          return 'Tendencia de Alto Impacto. Negro de fondo y amarillo vibrante. Ofrece el mayor contraste y legibilidad posible, ideal para ofertas imperdibles y carteles directos.';
+                        case 'pastel':
+                          return 'Tendencia Estética Soft. Colores pasteles suaves y delicados. Transmiten paz, exclusividad, diseño escandinavo y minimalismo premium.';
+                        case 'sunset':
+                          return 'Tendencia Nostálgica Crepuscular. Rojos ardientes y amarillos del atardecer. Evoca emociones profundas de finalización de día, descanso y romanticismo.';
+                        default:
+                          return 'Una selección equilibrada de 3 colores clave para garantizar armonía, legibilidad y diseño premium.';
+                      }
+                    })()}
+                  </div>
+                )}
               </div>
 
               <div className="stage-option-actions">
