@@ -90,23 +90,15 @@ async def guardar_onboarding(datos: OnboardingData, usuario: dict = Depends(veri
         # Guardar en Firestore de forma asíncrona para no bloquear el event loop.
         # Usamos merge=True para que las actualizaciones parciales no borren campos previos.
         doc_ref = db.collection("usuarios").document(uid)
-<<<<<<< HEAD
         await anyio.to_thread.run_sync(functools.partial(doc_ref.set, datos.dict(), merge=True))
-=======
-        
-        def guardar_firestore():
-            doc_ref.set(datos.dict(), merge=True)
-            
-        await anyio.to_thread.run_sync(guardar_firestore)
-        
+
         # Sincronización fire-and-forget a HubSpot CRM (Fase 2)
         try:
             from services.hubspot_service import sync_brand_to_hubspot
             await anyio.to_thread.run_sync(sync_brand_to_hubspot, datos.dict(), usuario.get("email"))
         except Exception as hs_err:
             print(f"HubSpot background trigger failed: {hs_err}")
->>>>>>> 4135ec4619711a49dd5012bffc7d7aa9eb85d06a
-        
+
         return {"mensaje": "ADN de marca guardado con éxito", "uid_procesado": uid}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error al guardar en base de datos: {str(e)}")

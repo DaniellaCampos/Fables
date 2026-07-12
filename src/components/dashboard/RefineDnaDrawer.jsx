@@ -36,29 +36,24 @@ export default function RefineDnaDrawer({ open, initialData, saving, onClose, on
   if (open !== prevOpen) {
     setPrevOpen(open);
     if (open && initialData) {
-      // Fallback a localStorage para datos de la versión legacy
-      const legacyBrand = (() => {
-        try {
-          return JSON.parse(localStorage.getItem('cc-brand') || '{}');
-        } catch {
-          return {};
-        }
-      })();
-
+      // initialData ya viene del backend (/api/onboarding), correctamente
+      // aislado por uid a través del token verificado. No leer un fallback
+      // de localStorage sin uid aquí: esa fue una de las vías por las que
+      // datos de un usuario aparecían en la sesión de otro.
       setForm({
         arquetipo_marca: initialData.arquetipo_marca || '',
         proposito_marca: initialData.proposito_marca || '',
         enemigo_marca: initialData.enemigo_marca || '',
         tono_voz: initialData.tono_voz || 'Cercano',
         emocion_objetivo: initialData.emocion_objetivo || 'Confianza',
-        
-        name: initialData.name || legacyBrand.name || '',
-        nicho_negocio: initialData.nicho_negocio || legacyBrand.service || 'Paseos en lancha',
-        ubicacion: initialData.ubicacion || legacyBrand.location || '',
-        language: initialData.language || legacyBrand.language || 'Español',
-        color_hex: initialData.color_hex || legacyBrand.primary || '#0b6670',
-        secondary_color: initialData.secondary_color || legacyBrand.secondary || '#e85f3d',
-        audiences: initialData.audiences || legacyBrand.audiences || []
+
+        name: initialData.name || '',
+        nicho_negocio: initialData.nicho_negocio || 'Paseos en lancha',
+        ubicacion: initialData.ubicacion || '',
+        language: initialData.language || 'Español',
+        color_hex: initialData.color_hex || '#0b6670',
+        secondary_color: initialData.secondary_color || '#e85f3d',
+        audiences: initialData.audiences || []
       });
       // Volver a la pestaña principal al abrir
       setActiveTab('adn');

@@ -1,10 +1,11 @@
-import { createContext, useContext, useMemo, useState, useEffect } from 'react';
+import { createContext, useContext, useMemo, useState, useEffect, useRef } from 'react';
 import { defaultBrand, mockImages } from '../mocks/data';
-import { 
-  loginWithGoogle, 
-  loginWithEmail, 
-  registerWithEmail, 
-  logoutUser
+import {
+  loginWithGoogle,
+  loginWithEmail,
+  registerWithEmail,
+  logoutUser,
+  subscribeToAuthChanges
 } from '../services/firebase';
 import { apiSaveDesign, apiGetUserDesigns } from '../services/api';
 
@@ -25,55 +26,116 @@ const initialProject = {
   selectedDecoration: 0
 };
 
-export function AppProvider({ children }) {
-  const [brand, setBrand] = useState(() => ({
-    ...defaultBrand,
-    ...(JSON.parse(localStorage.getItem('cc-brand') || 'null') || {})
-  }));
-  const [project, setProject] = useState(initialProject); 
-  const [images, setImages] = useState(() => {
-    try {
-      const stored = localStorage.getItem('cc-user-images');
-      return stored ? JSON.parse(stored) : mockImages.slice(0, 2);
-    } catch {
-      return mockImages.slice(0, 2);
-    }
-  });
-  const [unsplashImages, setUnsplashImages] = useState([]);
-  const [user, setUser] = useState(() => JSON.parse(sessionStorage.getItem('cc-user') || 'null'));
-  const [campaign, setCampaign] = useState(null);
-  
-  // Guardar imágenes de usuario en localStorage al cambiar
-  useEffect(() => {
-    localStorage.setItem('cc-user-images', JSON.stringify(images));
-  }, [images]);
+// Cada usuario tiene sus propias claves de localStorage, aisladas por uid.
+// Las claves antiguas sin uid ('cc-brand', 'cc-user-images') se eliminan al
+// arrancar y al cerrar sesión: eran compartidas por todas las cuentas del
+// mismo navegador y eran la causa del cruce de datos entre usuarios.
+const brandKey = (uid) => `cc-brand-${uid}`;
+const imagesKey = (uid) => `cc-user-images-${uid}`;
+const LEGACY_KEYS = ['cc-brand', 'cc-user-images'];
 
-  // State for user's saved designs history
+function loadBrandFor(uid) {
+  if (!uid) return defaultBrand;
+  try {
+    const stored = localStorage.getItem(brandKey(uid));
+    return stored ? { ...defaultBrand, ...JSON.parse(stored) } : defaultBrand;
+  } catch {
+    return defaultBrand;
+  }
+}
+
+function loadImagesFor(uid) {
+  if (!uid) return mockImages.slice(0, 2);
+  try {
+    const stored = localStorage.getItem(imagesKey(uid));
+    return stored ? JSON.parse(stored) : mockImages.slice(0, 2);
+  } catch {
+    return mockImages.slice(0, 2);
+  }
+}
+
+export function AppProvider({ children }) {
+  // Estado inicial "sin usuario": nunca asumimos una sesión a partir de una
+  // copia local. El listener de Firebase (más abajo) es quien confirma,
+  // de forma asíncrona, quién tiene realmente la sesión activa.
+  const [user, setUser] = useState(null);
+  const [authReady, setAuthReady] = useState(false);
+
+  const [brand, setBrand] = useState(defaultBrand);
+  const [project, setProject] = useState(initialProject);
+  const [images, setImages] = useState(() => mockImages.slice(0, 2));
+  const [unsplashImages, setUnsplashImages] = useState([]);
+  const [campaign, setCampaign] = useState(null);
   const [savedDesigns, setSavedDesigns] = useState([]);
 
-  // Fetch designs from Firestore when user changes
+  // uid actualmente cargado en memoria, para no volver a inicializar
+  // brand/images en cada render y para no persistir datos de un usuario
+  // bajo la clave de otro mientras el efecto de cambio de usuario corre.
+  const loadedUidRef = useRef(undefined);
+
+  // Purga única de claves legacy sin aislar por uid (versiones previas al fix).
   useEffect(() => {
-    const fetchDesigns = async () => {
+    LEGACY_KEYS.forEach((key) => localStorage.removeItem(key));
+  }, []);
+
+  // Fuente única de verdad: nos suscribimos al estado real de Firebase Auth.
+  // Cualquier login, logout o expiración de sesión pasa por aquí, así que
+  // React nunca puede quedarse mostrando datos de una sesión que ya no existe.
+  useEffect(() => {
+    const unsubscribe = subscribeToAuthChanges((firebaseUser) => {
+      setUser(firebaseUser);
+      setAuthReady(true);
+    });
+    return unsubscribe;
+  }, []);
+
+  // Al cambiar el usuario (login, logout o cambio de cuenta), recargamos
+  // TODO el estado derivado desde las claves aisladas del nuevo uid (o desde
+  // los valores por defecto si no hay sesión). Nada del usuario anterior
+  // sobrevive a este efecto.
+  useEffect(() => {
+    const uid = user?.uid ?? null;
+    if (loadedUidRef.current === uid) return;
+    loadedUidRef.current = uid;
+
+    setBrand(loadBrandFor(uid));
+    setImages(loadImagesFor(uid));
+    setProject(initialProject);
+    setCampaign(null);
+    setUnsplashImages([]);
+    setSavedDesigns([]);
+
+    if (!uid) return;
+
+    (async () => {
       try {
         const list = await apiGetUserDesigns();
-        setSavedDesigns(list);
+        // Si el usuario ya cambió otra vez mientras esta petición estaba en
+        // vuelo, descartamos la respuesta: pertenece a una sesión anterior.
+        if (loadedUidRef.current === uid) setSavedDesigns(list);
       } catch (error) {
         console.error("Error al obtener diseños en contexto:", error);
       }
-    };
-    fetchDesigns();
+    })();
   }, [user]);
+
+  // Persistir imágenes de usuario en su propia clave (nunca en una compartida)
+  useEffect(() => {
+    if (!user?.uid) return;
+    localStorage.setItem(imagesKey(user.uid), JSON.stringify(images));
+  }, [images, user]);
 
   const updateBrand = (next) => {
     setBrand(next);
-    localStorage.setItem('cc-brand', JSON.stringify(next));
+    if (user?.uid) {
+      localStorage.setItem(brandKey(user.uid), JSON.stringify(next));
+    }
   };
 
   const login = async () => {
     try {
       const userData = await loginWithGoogle();
       setUser(userData);
-      sessionStorage.setItem('cc-user', JSON.stringify(userData));
       return userData;
     } catch (error) {
       console.error("Error en login global:", error);
@@ -85,7 +147,6 @@ export function AppProvider({ children }) {
     try {
       const userData = await loginWithEmail(email, password);
       setUser(userData);
-      sessionStorage.setItem('cc-user', JSON.stringify(userData));
       return userData;
     } catch (error) {
       console.error("Error en login email global:", error);
@@ -97,7 +158,6 @@ export function AppProvider({ children }) {
     try {
       const userData = await registerWithEmail(email, password, displayName);
       setUser(userData);
-      sessionStorage.setItem('cc-user', JSON.stringify(userData));
       return userData;
     } catch (error) {
       console.error("Error en registro email global:", error);
@@ -108,7 +168,7 @@ export function AppProvider({ children }) {
   const saveDesign = async (designName, dataUrl) => {
     // Get currently selected image URL
     const activeImage = images[project.selectedImage] || images[0];
-    
+
     const designData = {
       name: designName || 'Diseño sin título',
       format: project.format || 'story',
@@ -132,10 +192,21 @@ export function AppProvider({ children }) {
   const logout = async () => {
     try {
       await logoutUser();
-      setUser(null);
-      sessionStorage.removeItem('cc-user');
     } catch (error) {
       console.error("Error en logout global:", error);
+    } finally {
+      // Limpieza total, pase lo que pase con signOut(): ningún dato del
+      // usuario saliente debe quedar visible para la siguiente sesión en
+      // esta misma pestaña.
+      loadedUidRef.current = null;
+      setUser(null);
+      setBrand(defaultBrand);
+      setImages(mockImages.slice(0, 2));
+      setProject(initialProject);
+      setCampaign(null);
+      setUnsplashImages([]);
+      setSavedDesigns([]);
+      LEGACY_KEYS.forEach((key) => localStorage.removeItem(key));
     }
   };
 
@@ -147,6 +218,7 @@ export function AppProvider({ children }) {
     images,
     setImages,
     user,
+    authReady,
     login,
     signInWithEmail,
     signUpWithEmail,
@@ -157,7 +229,7 @@ export function AppProvider({ children }) {
     setCampaign,
     unsplashImages,
     setUnsplashImages
-  }), [brand, project, images, user, savedDesigns, campaign, unsplashImages]);
+  }), [brand, project, images, user, authReady, savedDesigns, campaign, unsplashImages]);
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 }

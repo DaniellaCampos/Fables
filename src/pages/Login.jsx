@@ -21,9 +21,12 @@ export default function Login() {
   const [confirmPassword, setConfirmPassword] = useState('');
 
   // Check if user already completed onboarding, otherwise send them to /onboarding
-  const checkOnboardingAndRedirect = async () => {
-    // 1. Check local storage first (instant redirect)
-    const localBrand = localStorage.getItem('cc-brand');
+  const checkOnboardingAndRedirect = async (uid) => {
+    // 1. Check local storage first (instant redirect), but ONLY for data that
+    // belongs to the account that just authenticated. Using an unscoped key
+    // here would redirect a freshly-logged-in user straight to the dashboard
+    // with a previous account's brand data still cached on this browser.
+    const localBrand = uid ? localStorage.getItem(`cc-brand-${uid}`) : null;
     if (localBrand) {
       navigate('/dashboard');
       return;
@@ -66,8 +69,8 @@ export default function Login() {
     setError(null);
     setLoading(true);
     try {
-      await login();
-      await checkOnboardingAndRedirect();
+      const userData = await login();
+      await checkOnboardingAndRedirect(userData.uid);
     } catch (err) {
       console.error("Error Google Auth:", err);
       const errMsg = err.message || '';
@@ -96,8 +99,8 @@ export default function Login() {
     setError(null);
     setLoading(true);
     try {
-      await signInWithEmail(email, password);
-      await checkOnboardingAndRedirect();
+      const userData = await signInWithEmail(email, password);
+      await checkOnboardingAndRedirect(userData.uid);
     } catch (err) {
       console.error("Error Email Login:", err);
       const errMsg = err.message || '';
