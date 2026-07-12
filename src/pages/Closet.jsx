@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { ArrowLeft, ArrowRight, Check, Lock, Shuffle, Unlock } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, Lock, Shuffle, Sparkles, Unlock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import {
   categoryDefs,
@@ -21,14 +21,23 @@ import FloatingAccessoryCarousel from '../components/FloatingAccessoryCarousel';
 import CategoryBottomBar from '../components/CategoryBottomBar';
 import RotatingOptionRail from '../components/RotatingOptionRail';
 import { Badge, Button } from '../components/ui';
+import { generateCampaign } from '../services/api';
 
 const categoryBlueprint = categoryDefs.map((cat) => ({
   ...cat,
-  items: null // Will be populated later
+  items: null // Se poblará dinámicamente
 }));
 
 export default function Closet() {
-  const { project, setProject, images = mockImages } = useApp();
+  const { 
+    project, 
+    setProject, 
+    images = mockImages, 
+    setImages,
+    user, 
+    campaign, 
+    setCampaign 
+  } = useApp();
   const nav = useNavigate();
 
   const [stage, setStage] = useState('recommendation');
@@ -41,13 +50,35 @@ export default function Closet() {
   const [lockedCategories, setLockedCategories] = useState({});
   const [addedPiece, setAddedPiece] = useState('');
 
+  // Estados locales para la generación por IA
+  const [idea, setIdea] = useState("Lanzamiento de croissants de chocolate calientes los domingos");
+  const [objective, setObjective] = useState("Vender");
+  const [loading, setLoading] = useState(false);
+  const [loadingMsg, setLoadingMsg] = useState("");
+
   const selectedFormat = formats[formatIndex];
   const compatibleTemplates = useMemo(
     () => templates.filter(t => t.formats.includes(selectedFormat.id)),
     [selectedFormat.id]
   );
 
-  // Build categories with items
+  // Lista dinámica de títulos incluyendo el generado por IA
+  const headlinesList = useMemo(() => {
+    if (campaign && campaign.instagram_copy) {
+      return [
+        {
+          id: 'ai-generated',
+          name: campaign.instagram_copy.substring(0, 45) + '...',
+          short: 'IA Sugerido ✨',
+          category: 'headline'
+        },
+        ...headlines
+      ];
+    }
+    return headlines;
+  }, [campaign]);
+
+  // Construir categorías de diseño asociándoles sus elementos dinámicos
   const categories = useMemo(() => {
     const itemMap = {
       template: templates,
@@ -55,7 +86,7 @@ export default function Closet() {
       typography: typographies,
       filter: filters,
       palette: palettes,
-      headline: headlines,
+      headline: headlinesList, // Inyección de copy dinámico
       decoration: decorations,
       textPosition: textPositions,
       cta: ctas
@@ -65,7 +96,7 @@ export default function Closet() {
       ...cat,
       items: itemMap[cat.id] || []
     }));
-  }, [images]);
+  }, [images, headlinesList]);
 
   const activeCategory = categories[activeIndex];
   const candidateIndex =
@@ -115,7 +146,7 @@ export default function Closet() {
     setTimeout(() => setAddedPiece(''), 900);
   }, [categories, committedDesign, lockedCategories, setProject]);
 
-  // Keyboard navigation
+  // Navegación por teclado
   useEffect(() => {
     if (stage !== 'closet') return;
 
@@ -175,18 +206,98 @@ export default function Closet() {
     setStage('template');
   };
 
-  const confirmTemplate = () => {
+  const confirmTemplate = async () => {
     const globalIndex = templates.findIndex((t) => t.id === compatibleTemplates[templateIndex].id);
     setCommittedDesign((d) => ({ ...d, selectedTemplate: globalIndex }));
     setProject((p) => ({ ...p, selectedTemplate: globalIndex }));
-    setStage('closet');
-    setAddedPiece('template');
-    setTimeout(() => setAddedPiece(''), 900);
+    
+    // Iniciar llamada a la API
+    setLoading(true);
+    setLoadingMsg("Analizando identidad de marca de tu negocio...");
+
+    try {
+      setLoadingMsg("La Inteligencia Artificial (Groq Llama 3) está redactando tu campaña...");
+      const result = await generateCampaign({
+        usuario_id: user?.uid || "mock-user-12345",
+        idea_usuario: idea,
+        formato: selectedFormat.name,
+        objetivo: objective
+      });
+
+      setLoadingMsg("Buscando 3 imágenes estéticas de alta calidad en Unsplash...");
+      
+      // Inyectar imágenes devueltas por la API en el AppContext
+      if (result.images && result.images.length > 0) {
+        const formattedImages = result.images.map((url, i) => ({
+          id: `unsplash-${Date.now()}-${i}`,
+          name: `Unsplash - ${idea.substring(0, 15)}`,
+          tag: 'Sugerida ✨',
+          url: url
+        }));
+        setImages(formattedImages);
+      }
+
+      // Guardar el copy e información en el estado de la campaña
+      setCampaign(result);
+    } catch (error) {
+      console.error("Error al conectar con API de generación:", error);
+      alert("No se pudo conectar al servidor FastAPI. El Armario se cargará con datos simulados (mocks) para la demostración.");
+    } finally {
+      setLoading(false);
+      setStage('closet');
+      setAddedPiece('template');
+      setTimeout(() => setAddedPiece(''), 900);
+    }
   };
+
+  // ===== RENDERIZAR PANTALLA DE CARGA DE IA =====
+  if (loading) {
+    return (
+      <div 
+        className="page closet-page guided-stage loading-stage" 
+        style={{ 
+          display: 'flex', 
+          flexDirection: 'column', 
+          alignItems: 'center', 
+          justifyContent: 'center', 
+          minHeight: '80vh', 
+          textAlign: 'center' 
+        }}
+      >
+        <header className="page-heading centered">
+          <Badge tone="coral">CREANDO TU CONTENIDO CON IA</Badge>
+          <div 
+            className="loader" 
+            style={{ 
+              border: '8px solid #fbf7ed', 
+              borderTop: '8px solid #0b6670', 
+              borderRadius: '50%', 
+              width: '60px', 
+              height: '60px', 
+              animation: 'spin 1s linear infinite', 
+              margin: '2.5rem auto' 
+            }}
+          ></div>
+          <style>{`
+            @keyframes spin {
+              0% { transform: rotate(0deg); }
+              100% { transform: rotate(360deg); }
+            }
+          `}</style>
+          <h2 style={{ fontFamily: 'Epilogue', color: '#172a35', fontSize: '1.8rem', maxWidth: '600px', margin: '0 auto' }}>
+            {loadingMsg}
+          </h2>
+          <p style={{ marginTop: '1.5rem', color: '#073f46', fontSize: '1rem' }}>
+            Esto puede tomar un par de segundos mientras consultamos con Groq y Unsplash de forma asíncrona.
+          </p>
+        </header>
+      </div>
+    );
+  }
 
   // ===== RENDER STAGES =====
 
-  // Stage 1: Format Recommendation
+  // Stage 1: Recommendation & AI Configuration
   if (stage === 'recommendation') {
     return (
       <div className="page closet-page guided-stage">
@@ -223,6 +334,75 @@ export default function Closet() {
             <Badge tone="mustard">NUESTRA ELECCIÓN · HISTORIA</Badge>
             <h2>Una historia puede funcionar mejor ahora.</h2>
             <p>"Te recomendamos crear una historia. {closetRecommendations.format}"</p>
+          </div>
+        </section>
+
+        {/* Sección del Formulario de Ideas con IA */}
+        <section 
+          className="ai-ideas-form" 
+          style={{ 
+            background: '#fbf7ed', 
+            padding: '1.8rem', 
+            borderRadius: '12px', 
+            marginBottom: '2.5rem', 
+            border: '1px solid #e2d9c2' 
+          }}
+        >
+          <h3 
+            style={{ 
+              fontFamily: 'Space Grotesk', 
+              color: '#172a35', 
+              marginBottom: '1.2rem', 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '10px', 
+              fontSize: '1.2rem',
+              fontWeight: 'bold'
+            }}
+          >
+            <Sparkles style={{ color: '#e85f3d', width: '22px', height: '22px' }} /> 
+            Personaliza tu contenido con Inteligencia Artificial
+          </h3>
+          <div className="form-grid-ai" style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '1.5rem' }}>
+            <label className="field" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <span style={{ fontSize: '0.9rem', fontWeight: 'bold', color: '#073f46' }}>¿Qué idea o promoción quieres redactar hoy?</span>
+              <input 
+                type="text" 
+                value={idea} 
+                onChange={e => setIdea(e.target.value)} 
+                placeholder="Ej. Croissants de chocolate calientes de los domingos" 
+                style={{ 
+                  padding: '0.7rem 0.9rem', 
+                  borderRadius: '8px', 
+                  border: '1px solid #0b6670', 
+                  width: '100%', 
+                  fontSize: '0.95rem', 
+                  outline: 'none',
+                  fontFamily: 'inherit'
+                }}
+              />
+            </label>
+            <label className="field" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <span style={{ fontSize: '0.9rem', fontWeight: 'bold', color: '#073f46' }}>Objetivo comercial</span>
+              <select 
+                value={objective} 
+                onChange={e => setObjective(e.target.value)}
+                style={{ 
+                  padding: '0.7rem 0.9rem', 
+                  borderRadius: '8px', 
+                  border: '1px solid #0b6670', 
+                  width: '100%', 
+                  fontSize: '0.95rem', 
+                  outline: 'none', 
+                  background: 'white',
+                  fontFamily: 'inherit'
+                }}
+              >
+                <option value="Vender">Vender</option>
+                <option value="Inspirar">Inspirar</option>
+                <option value="Informar">Informar</option>
+              </select>
+            </label>
           </div>
         </section>
 
@@ -309,7 +489,7 @@ export default function Closet() {
             Plantilla: <b>{compatibleTemplates[templateIndex].name}</b>
           </span>
           <Button onClick={confirmTemplate}>
-            Agregar plantilla
+            Agregar plantilla y generar con IA
             <Check />
           </Button>
         </div>
@@ -356,7 +536,7 @@ export default function Closet() {
             </b>
           </div>
 
-          {/* Fixed Canvas */}
+          {/* Canvas Fijo Central */}
           <div className="canvas-container">
             <FixedDesignCanvas
               design={previewDesign}
@@ -367,7 +547,7 @@ export default function Closet() {
             />
           </div>
 
-          {/* Option Info and Actions */}
+          {/* Información del accesorio y acciones */}
           <div className="stage-option-info">
             <div className="option-info-text">
               <span>{candidateSelection.category ? 'VISTA TEMPORAL' : 'PIEZA CONFIRMADA'}</span>
@@ -399,7 +579,7 @@ export default function Closet() {
           </div>
         </div>
 
-        {/* Floating Accessory Carousel - only for non-direct categories */}
+        {/* Carrusel Flotante - solo para categorías que no son ajustes directos */}
         {!activeCategory?.direct && activeCategory?.items.length > 0 && (
           <div className="carousel-section">
             <FloatingAccessoryCarousel
@@ -412,7 +592,7 @@ export default function Closet() {
         )}
       </main>
 
-      {/* Category Bottom Bar */}
+      {/* Barra de Categorías del Armario */}
       <CategoryBottomBar
         activeIndex={activeIndex}
         onCategoryChange={setActiveIndex}

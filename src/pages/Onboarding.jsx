@@ -1,3 +1,245 @@
-import {useState} from 'react'; import {useNavigate} from 'react-router-dom'; import {ArrowLeft,ArrowRight,Check,Sparkles} from 'lucide-react'; import {audiences,brandStyles} from '../mocks/data'; import {useApp} from '../context/AppContext'; import {Badge,Button,ChoiceGrid,Field,SelectField} from '../components/ui';
-const steps=['Tu negocio','Tu público','Tu estilo','Confirmación'];
-export default function Onboarding(){const {brand,updateBrand}=useApp();const [data,setData]=useState(brand);const [step,setStep]=useState(0);const [errors,setErrors]=useState({});const nav=useNavigate();const set=(key,value)=>setData(d=>({...d,[key]:value}));const toggle=(key,value)=>set(key,data[key].includes(value)?data[key].filter(x=>x!==value):[...data[key],value]);const next=()=>{if(step===0){const e={};if(!data.name.trim())e.name='Escribe el nombre de tu negocio.';if(!data.service.trim())e.service='Indica qué servicio ofreces.';setErrors(e);if(Object.keys(e).length)return;}setStep(s=>Math.min(3,s+1));};const save=()=>{updateBrand(data);nav('/dashboard')};return <main className="onboarding-page"><header className="onboarding-header"><div className="brand-lockup"><span className="logo-mark"><Sparkles/></span><b>Creator's Closet</b></div><button onClick={()=>nav('/login')}>Salir</button></header><div className="onboarding-progress">{steps.map((s,i)=><div className={i===step?'active':i<step?'done':''} key={s}><span>{i<step?<Check/>:i+1}</span><b>{s}</b></div>)}</div><div className="onboarding-grid"><section className="onboarding-form"><Badge>PASO {step+1} DE 4</Badge>{step===0&&<><h1>Cuéntanos sobre tu negocio</h1><p>Esta información nos ayuda a recomendarte contenido que se sienta tuyo.</p><div className="form-grid"><Field label="Nombre del negocio *" value={data.name} onChange={e=>set('name',e.target.value)} error={errors.name}/><SelectField label="Tipo de servicio *" value={data.service} onChange={e=>set('service',e.target.value)}><option>Paseos en lancha</option><option>Hospedaje</option><option>Restaurante</option><option>Tour guiado</option><option>Artesanías</option></SelectField><label className="field full"><span>Descripción breve</span><textarea value={data.description} onChange={e=>set('description',e.target.value)} rows="4" maxLength="180"/><small>{data.description.length}/180</small></label><Field label="Ubicación" value={data.location} onChange={e=>set('location',e.target.value)}/></div></>}{step===1&&<><h1>¿A quién quieres inspirar?</h1><p>Selecciona una o varias opciones. Podrás cambiarlas cuando quieras.</p><ChoiceGrid items={audiences} selected={data.audiences} multiple onToggle={v=>toggle('audiences',v)}/></>}{step===2&&<><h1>Dale personalidad a tu marca</h1><p>Elige hasta tres estilos y los colores que mejor te representan.</p><ChoiceGrid items={brandStyles} selected={data.styles} multiple onToggle={v=>toggle('styles',v)}/><div className="color-fields"><label className="field"><span>Color principal</span><div className="color-input"><input type="color" value={data.primary} onChange={e=>set('primary',e.target.value)}/><code>{data.primary}</code></div></label><label className="field"><span>Color secundario</span><div className="color-input"><input type="color" value={data.secondary} onChange={e=>set('secondary',e.target.value)}/><code>{data.secondary}</code></div></label><SelectField label="Idioma preferido" value={data.language} onChange={e=>set('language',e.target.value)}><option>Español</option><option>English</option><option>Español e inglés</option></SelectField></div></>}{step===3&&<><h1>Así se siente tu marca</h1><p>Revisa el resumen. Todo esto se puede editar después desde “Mi marca”.</p><div className="summary-list"><div><span>Negocio</span><b>{data.name}</b><small>{data.service} · {data.location}</small></div><div><span>Público</span><b>{data.audiences.join(' · ')||'Sin seleccionar'}</b></div><div><span>Personalidad</span><b>{data.styles.join(' · ')||'Sin seleccionar'}</b></div><div><span>Colores</span><i style={{background:data.primary}}/><i style={{background:data.secondary}}/> <b>{data.language}</b></div></div></>}</section><aside className="brand-preview" style={{'--brand':data.primary,'--brand-accent':data.secondary}}><span className="preview-label">VISTA PREVIA</span><div className="brand-poster"><span>{data.location||'TU DESTINO'}</span><h2>{data.name||'El nombre de tu negocio'}</h2><p>{data.description||'Tu historia merece verse increíble.'}</p><b>{data.styles[0]||'TU ESTILO'} →</b></div><small>La vista previa cambia con tus respuestas.</small></aside></div><footer className="onboarding-actions"><Button variant="secondary" onClick={()=>step?setStep(s=>s-1):nav('/login')}><ArrowLeft/>{step?'Atrás':'Volver'}</Button>{step<3?<Button onClick={next}>Continuar<ArrowRight/></Button>:<Button onClick={save}>Guardar mi marca<Check/></Button>}</footer></main>}
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { ArrowLeft, ArrowRight, Check, Sparkles } from 'lucide-react';
+import { audiences, brandStyles } from '../mocks/data';
+import { useApp } from '../context/AppContext';
+import { Badge, Button, ChoiceGrid, Field, SelectField } from '../components/ui';
+import { saveOnboarding } from '../services/api';
+
+const steps = ['Tu negocio', 'Tu público', 'Tu estilo', 'Confirmación'];
+
+export default function Onboarding() {
+  const { brand, updateBrand } = useApp();
+  const [data, setData] = useState(brand);
+  const [step, setStep] = useState(0);
+  const [errors, setErrors] = useState({});
+  const [saving, setSaving] = useState(false);
+  const nav = useNavigate();
+
+  const set = (key, value) => setData(d => ({ ...d, [key]: value }));
+  
+  const toggle = (key, value) => set(key, data[key].includes(value) 
+    ? data[key].filter(x => x !== value) 
+    : [...data[key], value]
+  );
+
+  const next = () => {
+    if (step === 0) {
+      const e = {};
+      if (!data.name.trim()) e.name = 'Escribe el nombre de tu negocio.';
+      if (!data.service.trim()) e.service = 'Indica qué servicio ofreces.';
+      setErrors(e);
+      if (Object.keys(e).length) return;
+    }
+    setStep(s => Math.min(3, s + 1));
+  };
+
+  const save = async () => {
+    setSaving(true);
+    try {
+      // Guardar en Firestore a través de la API
+      await saveOnboarding(data);
+      updateBrand(data);
+      nav('/dashboard');
+    } catch (error) {
+      console.error("Error al guardar onboarding en backend:", error);
+      // Fallback local por si el servidor no está corriendo
+      alert("Advertencia: No se pudo guardar la marca en Firestore (FastAPI no responde). Se guardará localmente en el navegador.");
+      updateBrand(data);
+      nav('/dashboard');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <main className="onboarding-page">
+      <header className="onboarding-header">
+        <div className="brand-lockup">
+          <span className="logo-mark"><Sparkles /></span>
+          <b>Creator's Closet</b>
+        </div>
+        <button onClick={() => nav('/login')}>Salir</button>
+      </header>
+
+      <div className="onboarding-progress">
+        {steps.map((s, i) => (
+          <div className={i === step ? 'active' : i < step ? 'done' : ''} key={s}>
+            <span>{i < step ? <Check /> : i + 1}</span>
+            <b>{s}</b>
+          </div>
+        ))}
+      </div>
+
+      <div className="onboarding-grid">
+        <section className="onboarding-form">
+          <Badge>PASO {step + 1} DE 4</Badge>
+          
+          {step === 0 && (
+            <>
+              <h1>Cuéntanos sobre tu negocio</h1>
+              <p>Esta información nos ayuda a recomendarte contenido que se sienta tuyo.</p>
+              <div className="form-grid">
+                <Field 
+                  label="Nombre del negocio *" 
+                  value={data.name} 
+                  onChange={e => set('name', e.target.value)} 
+                  error={errors.name} 
+                />
+                <SelectField 
+                  label="Tipo de servicio *" 
+                  value={data.service} 
+                  onChange={e => set('service', e.target.value)}
+                >
+                  <option>Paseos en lancha</option>
+                  <option>Hospedaje</option>
+                  <option>Restaurante</option>
+                  <option>Tour guiado</option>
+                  <option>Artesanías</option>
+                </SelectField>
+                <label className="field full">
+                  <span>Descripción breve</span>
+                  <textarea 
+                    value={data.description} 
+                    onChange={e => set('description', e.target.value)} 
+                    rows="4" 
+                    maxLength="180" 
+                  />
+                  <small>{data.description.length}/180</small>
+                </label>
+                <Field 
+                  label="Ubicación" 
+                  value={data.location} 
+                  onChange={e => set('location', e.target.value)} 
+                />
+              </div>
+            </>
+          )}
+
+          {step === 1 && (
+            <>
+              <h1>¿A quién quieres inspirar?</h1>
+              <p>Selecciona una o varias opciones. Podrás cambiarlas cuando quieras.</p>
+              <ChoiceGrid 
+                items={audiences} 
+                selected={data.audiences} 
+                multiple 
+                onToggle={v => toggle('audiences', v)} 
+              />
+            </>
+          )}
+
+          {step === 2 && (
+            <>
+              <h1>Dale personalidad a tu marca</h1>
+              <p>Elige hasta tres estilos y los colores que mejor te representan.</p>
+              <ChoiceGrid 
+                items={brandStyles} 
+                selected={data.styles} 
+                multiple 
+                onToggle={v => toggle('styles', v)} 
+              />
+              <div className="color-fields">
+                <label className="field">
+                  <span>Color principal</span>
+                  <div className="color-input">
+                    <input 
+                      type="color" 
+                      value={data.primary} 
+                      onChange={e => set('primary', e.target.value)} 
+                    />
+                    <code>{data.primary}</code>
+                  </div>
+                </label>
+                <label className="field">
+                  <span>Color secundario</span>
+                  <div className="color-input">
+                    <input 
+                      type="color" 
+                      value={data.secondary} 
+                      onChange={e => set('secondary', e.target.value)} 
+                    />
+                    <code>{data.secondary}</code>
+                  </div>
+                </label>
+                <SelectField 
+                  label="Idioma preferido" 
+                  value={data.language} 
+                  onChange={e => set('language', e.target.value)}
+                >
+                  <option>Español</option>
+                  <option>English</option>
+                  <option>Español e inglés</option>
+                </SelectField>
+              </div>
+            </>
+          )}
+
+          {step === 3 && (
+            <>
+              <h1>Así se siente tu marca</h1>
+              <p>Revisa el resumen. Todo esto se puede editar después desde “Mi marca”.</p>
+              <div className="summary-list">
+                <div>
+                  <span>Negocio</span>
+                  <b>{data.name}</b>
+                  <small>{data.service} · {data.location}</small>
+                </div>
+                <div>
+                  <span>Público</span>
+                  <b>{data.audiences.join(' · ') || 'Sin seleccionar'}</b>
+                </div>
+                <div>
+                  <span>Personalidad</span>
+                  <b>{data.styles.join(' · ') || 'Sin seleccionar'}</b>
+                </div>
+                <div>
+                  <span>Colores</span>
+                  <i style={{ background: data.primary }} />
+                  <i style={{ background: data.secondary }} /> 
+                  <b>{data.language}</b>
+                </div>
+              </div>
+            </>
+          )}
+        </section>
+
+        <aside 
+          className="brand-preview" 
+          style={{ '--brand': data.primary, '--brand-accent': data.secondary }}
+        >
+          <span className="preview-label">VISTA PREVIA</span>
+          <div className="brand-poster">
+            <span>{data.location || 'TU DESTINO'}</span>
+            <h2>{data.name || 'El nombre de tu negocio'}</h2>
+            <p>{data.description || 'Tu historia merece verse increíble.'}</p>
+            <b>{data.styles[0] || 'TU ESTILO'} →</b>
+          </div>
+          <small>La vista previa cambia con tus respuestas.</small>
+        </aside>
+      </div>
+
+      <footer className="onboarding-actions">
+        <Button 
+          variant="secondary" 
+          onClick={() => (step ? setStep(s => s - 1) : nav('/login'))}
+          disabled={saving}
+        >
+          <ArrowLeft />
+          {step ? 'Atrás' : 'Volver'}
+        </Button>
+        {step < 3 ? (
+          <Button onClick={next}>
+            Continuar
+            <ArrowRight />
+          </Button>
+        ) : (
+          <Button onClick={save} disabled={saving}>
+            {saving ? 'Guardando...' : 'Guardar mi marca'}
+            <Check />
+          </Button>
+        )}
+      </footer>
+    </main>
+  );
+}

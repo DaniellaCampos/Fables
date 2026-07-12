@@ -1,5 +1,6 @@
 import os
-from fastapi import FastAPI, Depends
+import anyio
+from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 
@@ -29,7 +30,7 @@ except FileNotFoundError:
     print("Firebase credentials not found, skipping initialization")
     db = None
 
-# Inicializar FastAPI (¡Solo una vez!)
+# Inicializar FastAPI
 app = FastAPI(title="Hackathon Backend - Creator's Closet")
 
 # Configuración CORS para que React pueda comunicarse sin bloqueos
@@ -42,22 +43,19 @@ app.add_middleware(
 )
 
 # ---------------------------------------------------------
-# 2. IMPORTACIONES LOCALES (Tus otros archivos)
+# 2. IMPORTACIONES LOCALES
 # ---------------------------------------------------------
-# ⚠️ IMPORTANTE: Si aún no has creado los archivos 'schemas.py' 
-# y 'security.py', Python dará error aquí. 
-from api.schemas import OnboardingData, ClosetRequest, ClosetGenerateRequest
+from api.schemas import OnboardingData, ClosetGenerateRequest
 from security import verificar_token
-from services.ai_service import generate_copies
-from services.vision_service import get_image
-from services.forecast_service import get_alert
+from services.ai_service import generate_campaign_content
+from services.vision_service import get_images
 
 
 # ---------------------------------------------------------
 # 3. RUTAS (Endpoints)
 # ---------------------------------------------------------
 
-# Endpoint de prueba para verificar que el servidor vive
+# Endpoint de prueba para verificar que el servidor está online
 @app.get("/")
 def read_root():
     return {"status": "online", "mensaje": "Servidor listo y Firebase conectado"}
@@ -65,21 +63,81 @@ def read_root():
 
 # RUTA 1: Guardar el ADN de la marca en Firestore
 @app.post("/api/onboarding")
-def guardar_onboarding(datos: OnboardingData, usuario: dict = Depends(verificar_token)):
-    # usuario["uid"] contiene el ID único de Google del usuario
+async def guardar_onboarding(datos: OnboardingData, usuario: dict = Depends(verificar_token)):
+    if db is None:
+        raise HTTPException(status_code=500, detail="Servicio de base de datos no disponible")
+    
     uid = usuario["uid"]
     
-    # Aquí guardas en Firestore (Descomentar cuando quieras probar la escritura)
-    # db.collection("usuarios").document(uid).set(datos.dict())
-    
-    return {"mensaje": "ADN de marca guardado con éxito", "uid_procesado": uid}
+    try:
+        # Guardar en Firestore de forma asíncrona para no bloquear el event loop
+        doc_ref = db.collection("usuarios").document(uid)
+        await anyio.to_thread.run_sync(doc_ref.set, datos.dict())
+        
+        return {"mensaje": "ADN de marca guardado con éxito", "uid_procesado": uid}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error al guardar en base de datos: {str(e)}")
 
 
-# RUTA 2: El Armario (Aquí entrará el código de la Persona 1)
+# RUTA 2: El Armario - Generación de campaña completa (IA + Imágenes)
 @app.post("/api/closet/generate")
-def generar_contenido(peticion: ClosetGenerateRequest):  # TODO: restore `usuario: dict = Depends(verificar_token)` after QA testing
-    alert = get_alert(peticion.location)
-    image = get_image(peticion.idea + " " + peticion.location)
-    copies = generate_copies(peticion.niche, peticion.location, peticion.idea)
-
-    return {"trend_alert": alert, "image_url": image, "generated_copies": copies}
+async def generar_contenido(peticion: ClosetGenerateRequest):
+    if db is None:
+        raise HTTPException(status_code=500, detail="Servicio de base de datos no disponible")
+    
+    usuario_id = peticion.usuario_id
+    
+    try:
+        # 1. Leer el documento del usuario en Firestore
+        doc_ref = db.collection("usuarios").document(usuario_id)
+        doc = await anyio.to_thread.run_sync(doc_ref.get)
+        
+        if not doc.exists:
+            raise HTTPException(
+                status_code=404, 
+                detail="Usuario no encontrado. Por favor, completa el onboarding primero antes de generar contenido."
+            )
+            
+        user_data = doc.to_dict()
+        brand_adn = OnboardingData(**user_data)
+        
+        # 2. Llamar al servicio de IA asíncrono para generar los copys y recomendaciones
+        ai_response = await generate_campaign_content(
+            brand_adn=brand_adn,
+            idea_usuario=peticion.idea_usuario,
+            formato=peticion.formato,
+            objetivo=peticion.objetivo
+        )
+        
+        # 3. Extraer las palabras clave sugeridas por la IA para buscar imágenes
+        keywords = ai_response.get("search_keywords", f"{brand_adn.nicho_negocio} {brand_adn.vibra_marca}")
+        
+        # 4. Llamar al servicio de visión asíncrono para obtener las 3 fotos estéticas
+        image_urls = await get_images(
+            keywords=keywords,
+            vibe=brand_adn.vibra_marca,
+            orientation="portrait"
+        )
+        
+        # 5. Retornar la campaña unificada al Frontend
+        return {
+            "instagram_copy": ai_response.get("instagram_copy"),
+            "hashtags": ai_response.get("hashtags"),
+            "image_recommendation": ai_response.get("image_recommendation"),
+            "images": image_urls,
+            "brand_adn": {
+                "nicho": brand_adn.nicho_negocio,
+                "cliente_ideal": brand_adn.cliente_ideal,
+                "ubicacion": brand_adn.ubicacion,
+                "color": brand_adn.color_hex,
+                "vibra": brand_adn.vibra_marca
+            }
+        }
+        
+    except HTTPException:
+        # Re-lanzar excepciones HTTP conocidas (como el 404 del usuario no registrado)
+        raise
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Error interno al generar la campaña: {str(e)}")
