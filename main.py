@@ -63,11 +63,11 @@ def read_root():
 
 # RUTA 1: Guardar el ADN de la marca en Firestore
 @app.post("/api/onboarding")
-async def guardar_onboarding(datos: OnboardingData, usuario: dict = Depends(verificar_token)):
+async def guardar_onboarding(datos: OnboardingData):  # TODO: restore `usuario: dict = Depends(verificar_token)` once a real frontend JWT is available
     if db is None:
         raise HTTPException(status_code=500, detail="Servicio de base de datos no disponible")
-    
-    uid = usuario["uid"]
+
+    uid = "test_local_user"  # TODO: replace with usuario["uid"] once auth is restored
     
     try:
         # Guardar en Firestore de forma asíncrona para no bloquear el event loop
@@ -81,12 +81,12 @@ async def guardar_onboarding(datos: OnboardingData, usuario: dict = Depends(veri
 
 # RUTA 2: El Armario - Generación de campaña completa (IA + Imágenes)
 @app.post("/api/closet/generate")
-async def generar_contenido(peticion: ClosetGenerateRequest):
+async def generar_contenido(peticion: ClosetGenerateRequest):  # TODO: restore `usuario: dict = Depends(verificar_token)` once a real frontend JWT is available
     if db is None:
         raise HTTPException(status_code=500, detail="Servicio de base de datos no disponible")
-    
-    usuario_id = peticion.usuario_id
-    
+
+    usuario_id = "test_local_user"  # TODO: replace with peticion.usuario_id / usuario["uid"] once auth is restored
+
     try:
         # 1. Leer el documento del usuario en Firestore
         doc_ref = db.collection("usuarios").document(usuario_id)
@@ -130,7 +130,12 @@ async def generar_contenido(peticion: ClosetGenerateRequest):
                 "cliente_ideal": brand_adn.cliente_ideal,
                 "ubicacion": brand_adn.ubicacion,
                 "color": brand_adn.color_hex,
-                "vibra": brand_adn.vibra_marca
+                "vibra": brand_adn.vibra_marca,
+                "arquetipo": brand_adn.arquetipo_marca,
+                "proposito": brand_adn.proposito_marca,
+                "enemigo": brand_adn.enemigo_marca,
+                "tono_voz": brand_adn.tono_voz,
+                "emocion_objetivo": brand_adn.emocion_objetivo
             }
         }
         
