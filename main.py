@@ -1,4 +1,5 @@
 import os
+import functools
 import anyio
 from datetime import datetime
 from fastapi import FastAPI, Depends, HTTPException
@@ -89,7 +90,7 @@ async def guardar_onboarding(datos: OnboardingData, usuario: dict = Depends(veri
         # Guardar en Firestore de forma asíncrona para no bloquear el event loop.
         # Usamos merge=True para que las actualizaciones parciales no borren campos previos.
         doc_ref = db.collection("usuarios").document(uid)
-        await anyio.to_thread.run_sync(doc_ref.set, datos.dict(), merge=True)
+        await anyio.to_thread.run_sync(functools.partial(doc_ref.set, datos.dict(), merge=True))
         
         return {"mensaje": "ADN de marca guardado con éxito", "uid_procesado": uid}
     except Exception as e:
