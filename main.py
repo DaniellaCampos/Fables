@@ -18,12 +18,16 @@ load_dotenv()
 cred_path = "firebase_credenciales.json"
 print("Buscando credenciales en:", os.path.abspath(cred_path))
 
-if not firebase_admin._apps:
-    cred = credentials.Certificate(cred_path)
-    firebase_admin.initialize_app(cred)
+try:
+    if not firebase_admin._apps:
+        cred = credentials.Certificate(cred_path)
+        firebase_admin.initialize_app(cred)
 
-# Conectar a la base de datos Firestore
-db = firestore.client()
+    # Conectar a la base de datos Firestore
+    db = firestore.client()
+except FileNotFoundError:
+    print("Firebase credentials not found, skipping initialization")
+    db = None
 
 # Inicializar FastAPI (¡Solo una vez!)
 app = FastAPI(title="Hackathon Backend - Creator's Closet")
@@ -42,8 +46,11 @@ app.add_middleware(
 # ---------------------------------------------------------
 # ⚠️ IMPORTANTE: Si aún no has creado los archivos 'schemas.py' 
 # y 'security.py', Python dará error aquí. 
-from api.schemas import OnboardingData, ClosetRequest
+from api.schemas import OnboardingData, ClosetRequest, ClosetGenerateRequest
 from security import verificar_token
+from services.ai_service import generate_copies
+from services.vision_service import get_image
+from services.forecast_service import get_alert
 
 
 # ---------------------------------------------------------
@@ -70,11 +77,9 @@ def guardar_onboarding(datos: OnboardingData, usuario: dict = Depends(verificar_
 
 # RUTA 2: El Armario (Aquí entrará el código de la Persona 1)
 @app.post("/api/closet/generate")
-def generar_contenido(peticion: ClosetRequest, usuario: dict = Depends(verificar_token)):
-    uid = usuario["uid"]
-    
-    # 1. Leer el ADN de marca de Firestore usando el 'uid'
-    # 2. Persona 1 entra aquí: Pasa el ADN + peticion a la API de IA (Gemini/Groq)
-    # 3. Persona 1 entra aquí: Pasa la petición a Unsplash
-    
-    return {"mensaje": "Infraestructura lista. Esperando a que Persona 1 conecte la IA."}
+def generar_contenido(peticion: ClosetGenerateRequest):  # TODO: restore `usuario: dict = Depends(verificar_token)` after QA testing
+    alert = get_alert(peticion.location)
+    image = get_image(peticion.idea + " " + peticion.location)
+    copies = generate_copies(peticion.niche, peticion.location, peticion.idea)
+
+    return {"trend_alert": alert, "image_url": image, "generated_copies": copies}
