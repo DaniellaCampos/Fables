@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fables - Liquid Glass Design</title>
+    <link href="https://fonts.googleapis.com/css2?family=Georgia:wght@400;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Liquid Glass Palette */
+            --glass-frost: rgba(255, 253, 248, 0.65);
+            --glass-deeper: rgba(251, 247, 237, 0.5);
+            --backdrop-blur: blur(8px);
+
+            /* Retro Colors */
+            --retro-teal: #3d8989;
+            --retro-coral: #d0705f;
+            --retro-mustard: #c7a86a;
+            --retro-green: #6b9d7b;
+            --cream-warm: #f9f6f0;
+            --dark-navy: #2c3e3f;
+
+            /* Shadows Soft */
+            --shadow-soft: 0 4px 12px rgba(45, 122, 122, 0.08);
+            --shadow-medium: 0 8px 24px rgba(45, 122, 122, 0.12);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f9f6f0 0%, #faf7f1 100%);
+            color: var(--dark-navy);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        /* Typography */
+        h1, h2, h3 {
+            font-family: Georgia, serif;
+            font-weight: 400;
+            letter-spacing: -0.02em;
+            color: var(--dark-navy);
+        }
+
+        h1 {
+            font-size: clamp(2.5rem, 5vw, 3.5rem);
+            line-height: 1.1;
+        }
+
+        h2 {
+            font-size: clamp(1.8rem, 3vw, 2.4rem);
+            line-height: 1.15;
+        }
+
+        h3 {
+            font-size: 1.3rem;
+            font-weight: 500;
+        }
+
+        p {
+            font-size: 1rem;
+            color: #6b7577;
+            max-width: 65ch;
+        }
+
+        /* Liquid Glass Card */
+        .glass-card {
+            background: var(--glass-frost);
+            backdrop-filter: var(--backdrop-blur);
+            border: 1px solid rgba(61, 137, 137, 0.15);
+            border-radius: 16px;
+            padding: 2.5rem;
+            box-shadow: var(--shadow-soft);
+            transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+
+        .glass-card:hover {
+            border-color: rgba(61, 137, 137, 0.25);
+            box-shadow: var(--shadow-medium);
+            transform: translateY(-2px);
+        }
+
+        /* Layout */
+        .container {
+            width: min(1200px, calc(100% - 3rem));
+            margin: 0 auto;
+            padding: 4rem 0;
+        }
+
+        .divider {
+            width: 1px;
+            height: 2.5rem;
+            background: linear-gradient(to bottom, transparent, rgba(61, 137, 137, 0.2), transparent);
+            margin: 0 1.5rem;
+        }
+
+        /* Hero Section */
+        .hero {
+            display: grid;
+            gap: 2rem;
+            margin-bottom: 5rem;
+            text-align: center;
+        }
+
+        .hero h1 {
+            color: var(--retro-teal);
+            margin-bottom: 1rem;
+        }
+
+        .hero p {
+            margin: 0 auto;
+            font-size: 1.1rem;
+            color: #7a8588;
+        }
+
+        .badge-retro {
+            display: inline-block;
+            background: rgba(199, 168, 106, 0.15);
+            border: 1px solid rgba(199, 168, 106, 0.3);
+            color: var(--retro-mustard);
+            padding: 0.5rem 1rem;
+            border-radius: 99px;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Format Grid */
+        .format-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 1.5rem;
+            margin: 3rem 0;
+        }
+
+        .format-card {
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+        }
+
+        .format-card-inner {
+            position: relative;
+            padding: 2rem;
+            text-align: center;
+            min-height: 280px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            cursor: pointer;
+        }
+
+        .format-card.active .format-card-inner {
+            background: var(--retro-teal);
+            color: white;
+            border: 2px solid var(--retro-teal);
+        }
+
+        .format-card:not(.active) .format-card-inner {
+            background: var(--glass-frost);
+            backdrop-filter: var(--backdrop-blur);
+            border: 1px solid rgba(61, 137, 137, 0.15);
+            color: var(--dark-navy);
+        }
+
+        .format-icon {
+            font-size: 3.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .format-card h3 {
+            margin: 1rem 0 0.5rem;
+            font-size: 1.2rem;
+        }
+
+        .format-card p {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin: 0;
+        }
+
+        .format-ratio {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.75rem;
+            font-weight: 600;
+            opacity: 0.6;
+        }
+
+        .select-label {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.8rem;
+            font-weight: 700;
+            margin-top: auto;
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.875rem 1.5rem;
+            border: none;
+            border-radius: 12px;
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+            font-size: 0.95rem;
+        }
+
+        .btn-primary {
+            background: var(--retro-teal);
+            color: white;
+            border: 2px solid var(--retro-teal);
+        }
+
+        .btn-primary:hover {
+            background: transparent;
+            color: var(--retro-teal);
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--retro-teal);
+            border: 2px solid rgba(61, 137, 137, 0.3);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--retro-teal);
+            background: rgba(61, 137, 137, 0.05);
+        }
+
+        /* Actions */
+        .actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 2.5rem;
+            flex-wrap: wrap;
+        }
+
+        /* Section with visual interest */
+        .feature-section {
+            background: var(--retro-teal);
+            color: white;
+            padding: 4rem 2.5rem;
+            border-radius: 16px;
+            margin: 4rem 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-section::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -10%;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(255,255,255,0.08), transparent);
+            border-radius: 50%;
+        }
+
+        .feature-section h2 {
+            position: relative;
+            z-index: 1;
+            font-size: clamp(2rem, 4vw, 2.8rem);
+            margin-bottom: 1rem;
+            color: white;
+        }
+
+        .feature-section p {
+            position: relative;
+            z-index: 1;
+            color: rgba(255,255,255,0.85);
+            max-width: 45ch;
+            line-height: 1.7;
+        }
+
+        /* Mobile responsive */
+        @media (max-width: 768px) {
+            .container {
+                width: calc(100% - 2rem);
+                padding: 2rem 0;
+            }
+
+            .hero {
+                margin-bottom: 3rem;
+            }
+
+            .format-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .glass-card {
+                padding: 1.5rem;
+            }
+
+            .feature-section {
+                padding: 2.5rem 1.5rem;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            h2 {
+                font-size: 1.6rem;
+            }
+
+            .actions {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        /* Details Section */
+        .details-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            margin: 3rem 0;
+        }
+
+        .detail-card {
+            text-align: center;
+        }
+
+        .detail-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .detail-card h3 {
+            margin-bottom: 0.5rem;
+            color: var(--retro-coral);
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        .detail-card p {
+            margin: 0;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .details-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+        }
+
+        /* Highlight Text */
+        .highlight {
+            color: var(--retro-coral);
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Hero -->
+        <section class="hero">
+            <div>
+                <span class="badge-retro">✨ Próxima Pieza</span>
+                <h1>¿Qué quieres crear hoy?</h1>
+                <p>Elige un formato. Te recomendaremos las mejores combinaciones para tus fotos.</p>
+            </div>
+        </section>
+
+        <!-- Format Selection -->
+        <section class="format-grid">
+            <div class="format-card active">
+                <div class="glass-card">
+                    <div class="format-card-inner">
+                        <div>
+                            <span class="format-ratio">1:1</span>
+                            <div class="format-icon">📱</div>
+                            <h3>Story</h3>
+                            <p>Vertical, formato de historia</p>
+                        </div>
+                        <span class="select-label">Seleccionado ✓</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="format-card">
+                <div class="glass-card">
+                    <div class="format-card-inner">
+                        <div>
+                            <span class="format-ratio">9:16</span>
+                            <div class="format-icon">📹</div>
+                            <h3>Reel</h3>
+                            <p>Formato de video vertical</p>
+                        </div>
+                        <span class="select-label">Elegir formato</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="format-card">
+                <div class="glass-card">
+                    <div class="format-card-inner">
+                        <div>
+                            <span class="format-ratio">16:9</span>
+                            <div class="format-icon">🎬</div>
+                            <h3>Video</h3>
+                            <p>Formato horizontal</p>
+                        </div>
+                        <span class="select-label">Elegir formato</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="format-card">
+                <div class="glass-card">
+                    <div class="format-card-inner">
+                        <div>
+                            <span class="format-ratio">1:1</span>
+                            <div class="format-icon">🎠</div>
+                            <h3>Carrusel</h3>
+                            <p>Múltiples imágenes</p>
+                        </div>
+                        <span class="select-label">Elegir formato</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Feature Section -->
+        <section class="feature-section">
+            <h2>Composición Inteligente</h2>
+            <p>Nuestro sistema recomendará las mejores combinaciones de tipografía, colores y decoraciones para cada formato. Cada pieza será única.</p>
+            <div class="actions" style="margin-top: 2rem;">
+                <button class="btn btn-primary">Ver Historia</button>
+            </div>
+        </section>
+
+        <!-- Details Section -->
+        <section class="details-grid">
+            <div class="detail-card">
+                <div class="detail-icon">⚡</div>
+                <h3>Rápido</h3>
+                <p>Crea en segundos con recomendaciones inteligentes</p>
+            </div>
+            <div class="detail-card">
+                <div class="detail-icon">🎨</div>
+                <h3>Personalizado</h3>
+                <p>Ajusta cada elemento de tu composición visual</p>
+            </div>
+            <div class="detail-card">
+                <div class="detail-icon">📱</div>
+                <h3>Multiplataforma</h3>
+                <p>Optimizado para todos los dispositivos</p>
+            </div>
+        </section>
+
+        <!-- Actions -->
+        <section class="actions">
+            <button class="btn btn-secondary">Cancelar</button>
+            <button class="btn btn-primary">Continuar con Story →</button>
+        </section>
+    </div>
+</body>
+</html>

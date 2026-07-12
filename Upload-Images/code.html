@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+
+<html class="light" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Creator’s Closet - Subir Imágenes</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@700;800&family=Space+Grotesk:wght@500;600&family=Plus+Jakarta+Sans:wght@400;500&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@100..900&family=Plus+Jakarta+Sans:wght@100..900&family=Space+Grotesk:wght@100..900&display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.65);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+        }
+        .liquid-bg {
+            background: linear-gradient(135deg, #fbf9f5 0%, #efeeea 100%);
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                "outline-variant": "#bec8ca",
+                "on-error-container": "#93000a",
+                "on-tertiary-fixed-variant": "#594400",
+                "surface-container-high": "#eae8e4",
+                "primary": "#00535b",
+                "background": "#fbf9f5",
+                "surface-tint": "#006972",
+                "primary-fixed-dim": "#82d3de",
+                "on-primary-fixed": "#001f23",
+                "secondary-fixed-dim": "#ffb59f",
+                "on-surface-variant": "#3e494a",
+                "on-primary-container": "#9becf7",
+                "secondary-container": "#fe6f42",
+                "surface": "#fbf9f5",
+                "surface-dim": "#dbdad6",
+                "tertiary-container": "#7a5f0b",
+                "surface-bright": "#fbf9f5",
+                "on-secondary-fixed-variant": "#852300",
+                "on-surface": "#1b1c1a",
+                "surface-container-lowest": "#ffffff",
+                "on-tertiary": "#ffffff",
+                "on-secondary": "#ffffff",
+                "tertiary-fixed": "#ffdf96",
+                "on-secondary-container": "#631800",
+                "on-tertiary-container": "#ffdb87",
+                "on-primary-fixed-variant": "#004f56",
+                "inverse-surface": "#30312e",
+                "inverse-on-surface": "#f2f0ed",
+                "inverse-primary": "#82d3de",
+                "surface-variant": "#e4e2de",
+                "secondary": "#ac3509",
+                "surface-container": "#efeeea",
+                "on-secondary-fixed": "#3a0a00",
+                "tertiary": "#5e4800",
+                "on-primary": "#ffffff",
+                "on-tertiary-fixed": "#251a00",
+                "on-error": "#ffffff",
+                "primary-container": "#006d77",
+                "surface-container-low": "#f5f3ef",
+                "secondary-fixed": "#ffdbd0",
+                "primary-fixed": "#9ff0fb",
+                "error": "#ba1a1a",
+                "tertiary-fixed-dim": "#e7c269",
+                "on-background": "#1b1c1a",
+                "surface-container-highest": "#e4e2de",
+                "outline": "#6f797a",
+                "error-container": "#ffdad6"
+            },
+            "spacing": {
+                "xs": "4px", "sm": "12px", "gutter": "16px", "container-margin": "24px", "xl": "80px", "base": "8px", "lg": "48px", "md": "24px"
+            },
+            "fontFamily": {
+                "headline-lg": ["Epilogue"], "label-sm": ["Space Grotesk"], "label-bold": ["Space Grotesk"], "headline-lg-mobile": ["Epilogue"], "display-lg": ["Epilogue"], "display-md": ["Epilogue"], "body-md": ["Plus Jakarta Sans"], "body-lg": ["Plus Jakarta Sans"]
+            },
+            "fontSize": {
+                "headline-lg": ["30px", {"lineHeight": "1.3", "fontWeight": "700"}],
+                "label-sm": ["12px", {"lineHeight": "1.2", "fontWeight": "500"}],
+                "label-bold": ["14px", {"lineHeight": "1.2", "fontWeight": "600"}],
+                "headline-lg-mobile": ["24px", {"lineHeight": "1.3", "fontWeight": "700"}],
+                "display-lg": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                "display-md": ["36px", {"lineHeight": "1.2", "fontWeight": "700"}],
+                "body-md": ["16px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+</head>
+<body class="bg-background text-on-surface font-body-md min-h-screen selection:bg-primary-fixed selection:text-on-primary-fixed">
+<!-- Navigation Drawer (Shared Component) -->
+<aside class="hidden md:flex flex-col h-screen fixed left-0 top-0 p-container-margin z-40 bg-surface-container-low dark:bg-surface-container-lowest border-r border-outline-variant/20 w-64">
+<div class="mb-lg">
+<h1 class="font-headline-lg text-headline-lg font-bold text-primary">Creator’s Closet</h1>
+</div>
+<div class="flex items-center gap-sm mb-lg p-2 rounded-xl bg-surface-container">
+<div class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A professional portrait of a smiling Salvadoran entrepreneur in a clean, brightly lit office environment with tropical plants in the background. The style is editorial and high-end, using a soft warm light palette of creams and teals that matches the Newspring Liquid design system. High resolution, shallow depth of field, photography." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCogReN-zHrpPy_ZIxTJQYwc_Oa_IJqiQAOY_1JVGekLJ2AZABoxEMNgRxWAVHkAtsxT6jo0KbJW3b0dMU-kYCaWE-1HMN9rWXKs-ciLtsntcLL18CZORoL9yLbNjKzAn09LuQkQxdY3DmU-ZTMkPNJrWExIBFUuckmsIJBdat44wCrC9ARwdydIRdG74jec6sGzGi3ozNQnxNllVkgEdrcONwaj3_ER17pYeGObpem2FhGelxeD_mRUbm1wc2o3WxZLUMbilsBl1g"/>
+</div>
+<div>
+<p class="font-label-bold text-label-bold">¡Hola, Emprendedor!</p>
+<p class="text-[10px] uppercase tracking-wider text-on-surface-variant font-label-sm">Marketing Assistant</p>
+</div>
+</div>
+<nav class="flex flex-col gap-2">
+<a class="flex items-center gap-sm text-on-surface-variant hover:bg-surface-variant/50 rounded-lg px-4 py-3 transition-transform hover:translate-x-1" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-body-md">Inicio</span>
+</a>
+<a class="flex items-center gap-sm bg-primary/10 text-primary font-bold rounded-lg px-4 py-3 transition-transform hover:translate-x-1" href="#">
+<span class="material-symbols-outlined">rebase_edit</span>
+<span class="font-body-md">Crear</span>
+</a>
+<a class="flex items-center gap-sm text-on-surface-variant hover:bg-surface-variant/50 rounded-lg px-4 py-3 transition-transform hover:translate-x-1" href="#">
+<span class="material-symbols-outlined">style</span>
+<span class="font-body-md">Mi marca</span>
+</a>
+</nav>
+<div class="mt-auto glass-panel p-4 rounded-2xl">
+<p class="font-label-sm text-on-surface-variant mb-2">Espacio de Almacenamiento</p>
+<div class="h-1.5 w-full bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-primary w-2/3"></div>
+</div>
+<p class="text-[10px] mt-2 text-right">1.2 GB / 2 GB</p>
+</div>
+</aside>
+<!-- Top App Bar (Mobile Viewport Context) -->
+<header class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-container-margin py-sm bg-surface/65 backdrop-blur-xl border-b border-white/40 shadow-sm md:hidden">
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile font-bold text-primary">Creator’s Closet</h2>
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-primary">notifications</span>
+<div class="w-8 h-8 rounded-full bg-surface-variant overflow-hidden border border-primary/20">
+<img class="w-full h-full object-cover" data-alt="A small circular avatar icon showing a modern creative professional with a friendly expression. The lighting is soft and airy, consistent with a premium lifestyle travel brand aesthetic. The background is a clean, neutral cream color." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC7twObMtN7AhphsJ2YpA1YObKJhyZdTcNMQUI-jRLGtqoxjEjxZbf9DyxQva78nzRP_m6RZoiNkw0g02xwaEcx8NfV2ljQkm42C-KyV3BBIGYcnYpPIY1-3fToB44wBxsAmrNdV7kBle23mRPhdOQk0kh9ftyUCtmJ-8MHPAfMKlOoYh5yJoaAKjUdmhJvi6xv5F8hRBGay7gIOA4_v0gGf4DiIizCfXkP7HPUadPS7eUwPXDOufZYFP7DgO-ssEqNA0FtaI4l6r8"/>
+</div>
+</div>
+</header>
+<!-- Main Canvas -->
+<main class="md:ml-64 pt-20 md:pt-md px-container-margin pb-32">
+<div class="mb-lg">
+<span class="font-label-sm text-primary uppercase tracking-[0.2em] mb-2 block">Laboratorio Creativo</span>
+<h2 class="font-display-md text-display-md text-on-surface mb-xs">Crea tu Contenido</h2>
+<p class="text-on-surface-variant max-w-xl">Sube tus fotos de destinos y productos para generar piezas gráficas optimizadas para el mercado turístico de El Salvador.</p>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter lg:gap-lg mb-xl">
+<!-- Left: Upload Area -->
+<div class="lg:col-span-8 flex flex-col gap-gutter">
+<div class="relative group cursor-pointer">
+<div class="absolute -inset-1 bg-gradient-to-r from-primary/20 to-secondary/20 rounded-[32px] blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
+<div class="relative glass-panel rounded-[32px] p-12 border-dashed border-2 border-primary/20 flex flex-col items-center justify-center text-center min-h-[400px] hover:border-primary transition-colors">
+<div class="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mb-6 text-primary">
+<span class="material-symbols-outlined !text-4xl" style="font-variation-settings: 'wght' 300;">cloud_upload</span>
+</div>
+<h3 class="font-headline-lg text-headline-lg mb-2">Arrastra tus fotos aquí</h3>
+<p class="text-on-surface-variant mb-8">Formatos compatibles: JPG, PNG, WEBP (Máx. 10MB)</p>
+<button class="bg-primary text-on-primary px-8 py-4 rounded-full font-label-bold flex items-center gap-2 shadow-[0px_10px_30px_rgba(0,109,119,0.1)] hover:scale-105 transition-transform active:scale-95">
+                            Seleccionar Archivos
+                        </button>
+</div>
+</div>
+</div>
+<!-- Right: Recommendations -->
+<div class="lg:col-span-4 flex flex-col gap-gutter">
+<div class="glass-panel p-md rounded-3xl h-full border-white/60">
+<div class="flex items-center gap-2 mb-md">
+<span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+<h4 class="font-label-bold text-lg">Tips de Temporada</h4>
+</div>
+<ul class="space-y-gutter">
+<li class="flex gap-4 p-3 rounded-2xl bg-white/40 hover:bg-white/60 transition-colors">
+<div class="w-12 h-12 rounded-xl bg-tertiary-fixed shrink-0 flex items-center justify-center">
+<span class="material-symbols-outlined text-on-tertiary-fixed-variant">wb_sunny</span>
+</div>
+<div>
+<p class="font-label-bold text-sm">Luz de Atardecer</p>
+<p class="text-xs text-on-surface-variant">La costa del sol luce mejor con tonos cálidos entre las 5:00 PM y 6:30 PM.</p>
+</div>
+</li>
+<li class="flex gap-4 p-3 rounded-2xl bg-white/40 hover:bg-white/60 transition-colors">
+<div class="w-12 h-12 rounded-xl bg-secondary-fixed shrink-0 flex items-center justify-center">
+<span class="material-symbols-outlined text-on-secondary-fixed-variant">camera</span>
+</div>
+<div>
+<p class="font-label-bold text-sm">Retrato de Producto</p>
+<p class="text-xs text-on-surface-variant">Asegúrate de que tus artesanías tengan fondos neutros para aplicar filtros automáticos.</p>
+</div>
+</li>
+</ul>
+<div class="mt-lg pt-lg border-t border-outline-variant/30">
+<div class="flex justify-between items-center mb-sm">
+<h4 class="font-label-bold">Formatos Activos</h4>
+<span class="text-[10px] bg-secondary text-on-secondary px-2 py-0.5 rounded-full font-bold">PRO</span>
+</div>
+<div class="flex flex-wrap gap-2">
+<span class="px-3 py-1.5 bg-surface-container-highest rounded-lg text-xs font-label-sm">Instagram Reel</span>
+<span class="px-3 py-1.5 bg-surface-container-highest rounded-lg text-xs font-label-sm">Story (9:16)</span>
+<span class="px-3 py-1.5 bg-surface-container-highest rounded-lg text-xs font-label-sm">Banner Web</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Section Gallery -->
+<div class="mb-gutter flex justify-between items-end">
+<div>
+<h3 class="font-headline-lg text-headline-lg mb-1">Tu Galería</h3>
+<p class="text-on-surface-variant text-sm">Archivos recientemente subidos para procesar.</p>
+</div>
+<div class="flex gap-2">
+<button class="p-2 rounded-lg bg-surface-container hover:bg-surface-variant transition-colors">
+<span class="material-symbols-outlined">filter_list</span>
+</button>
+<button class="p-2 rounded-lg bg-surface-container hover:bg-surface-variant transition-colors">
+<span class="material-symbols-outlined">grid_view</span>
+</button>
+</div>
+</div>
+<!-- Responsive Grid -->
+<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-md">
+<!-- Card 1 -->
+<div class="group relative aspect-[4/5] rounded-[24px] overflow-hidden glass-panel border-white/20 shadow-sm">
+<img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" data-alt="A breathtaking view of Coatepeque Lake in El Salvador during the golden hour. The water is a deep turquoise reflecting the surrounding green volcanic hills. The lighting is ethereal and bright, capturing a high-end travel magazine aesthetic with soft shadows and vibrant natural colors." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC9xW28C0JVBvrXEVqraCOtdXNk8wlzQs8upvo7VoLz5Vw7V1hV_NYswT60lV4WnJAPH7uQ-Eu7pXja2OQW7JnGcqJb_PPGxFEJ6niE37mM-ib5maLFolsVDnNjbeVDGMiP3gzXYAkJ2oUp_UFvBmWwPIbNf3XYEPvVDCqCEztmp0CU9DAhjX9PFDQNTHISf_r4pLfFGIgl7-w7B0hSH_3rADunZLKIol440OksvBiG5zZKq_ZB8EZrwdEgwX5XKO_JdGDE_z_Pk0w"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-4">
+<p class="text-white font-label-bold text-sm">Lago Coatepeque.jpg</p>
+<div class="flex gap-2 mt-2">
+<button class="p-1.5 bg-white/20 backdrop-blur-md rounded-lg text-white hover:bg-white/40 transition-colors">
+<span class="material-symbols-outlined text-[18px]">edit</span>
+</button>
+<button class="p-1.5 bg-white/20 backdrop-blur-md rounded-lg text-white hover:bg-white/40 transition-colors">
+<span class="material-symbols-outlined text-[18px]">delete</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="group relative aspect-[4/5] rounded-[24px] overflow-hidden glass-panel border-white/20 shadow-sm">
+<img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" data-alt="Close-up photography of authentic Salvadoran coffee beans in a rustic wooden bowl, with a soft blur of a traditional coffee plantation in the background. The lighting is warm and organic, highlighting the rich textures of the beans. Professional editorial style, shallow depth of field, warm earthy color palette." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCsjA8z5WJKVXkMDOGF_AT6AC7aEbfYdlN_ml5gc2XgYswJnktIE4fIPiAL9r9fi4s8hshBixXJSzoXnOzXIKFQGYDc8yds2cCGbpMN87xNmCxHIU72p8lSU6cySTLPy0qmvSdaU4azo3IKhoHaG5KF655ik-mgQtSAZ5_rROOsiT63RCGi-SFpaoQIJ_acaPQZpU-IrPKOPmSdZIus3e9pHYdWFhr_Wr_SDEmbdwrOxX4jOsyspShevf82weRTDPCLc6ojn5XQKi4"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-4">
+<p class="text-white font-label-bold text-sm">Cafe_Especial.png</p>
+<div class="flex gap-2 mt-2">
+<button class="p-1.5 bg-white/20 backdrop-blur-md rounded-lg text-white hover:bg-white/40 transition-colors">
+<span class="material-symbols-outlined text-[18px]">edit</span>
+</button>
+<button class="p-1.5 bg-white/20 backdrop-blur-md rounded-lg text-white hover:bg-white/40 transition-colors">
+<span class="material-symbols-outlined text-[18px]">delete</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="group relative aspect-[4/5] rounded-[24px] overflow-hidden glass-panel border-white/20 shadow-sm">
+<img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" data-alt="A vibrant street scene from Ataco, El Salvador, featuring colorful mural-painted walls and cobblestone streets under a clear blue tropical sky. The light is crisp and high-contrast, evoking a modern postcard feeling. The image is framed with elegant spacing, fitting a clean, high-end digital interface design." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBom7DipBiGynWbXkv2twAe1mWL0r2Wc0npDvipiFCnnXyS7_g8QGJL1kox3CSpoMuOnBcCrHOsBpfv_NA3c629EigLkurmC571jCCjAePczgLS87u4b_svIZu5tf7T_0h8QOBG8FEsj44YcaIop39RRDs09fyvSi1o37F5JsSR0GdS4Cz_njdSgMMUd5fQNcGwmF9xX70AG7Fxn3R8VwTYYSy2tm38fL1O2PV1L0lZZzVv5cE0SSbv9RweUunicO6hOI0xI_W56ag"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-4">
+<p class="text-white font-label-bold text-sm">Ruta_Flores.jpg</p>
+<div class="flex gap-2 mt-2">
+<button class="p-1.5 bg-white/20 backdrop-blur-md rounded-lg text-white hover:bg-white/40 transition-colors">
+<span class="material-symbols-outlined text-[18px]">edit</span>
+</button>
+<button class="p-1.5 bg-white/20 backdrop-blur-md rounded-lg text-white hover:bg-white/40 transition-colors">
+<span class="material-symbols-outlined text-[18px]">delete</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Card 4 -->
+<div class="group relative aspect-[4/5] rounded-[24px] overflow-hidden glass-panel border-white/20 shadow-sm">
+<img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" data-alt="Action shot of a surfer riding a perfect wave at El Tunco beach, El Salvador, during a vibrant pink and orange sunset. The water is crystal clear with splashing droplets captured in high speed. The aesthetic is energetic and professional, with a color palette of deep ocean blues and sunset corals." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCorR0c2tDMn_6ZosELVny5KiyRi5j6SZoAhjG9Ud6ZklJl78cJN4EccvrIucd9ZbFKHol47gBKlrEHD89zfei3dLTczx4mojEZjAmmYLPUlr_wRml-qd0ozKMnmnx_VbYGAnqEGGezuGMn6nuXRJOnL92_90b0Job5a1M28IOFrT1NL2kpMOYiTTYuq7kaBHh3xZJePSdxF4yRPus2D49wJ91T-yFTg3p2cC4whLE9nEjI6obBsu1FtJtpTN6CHcL-tRf0YEk-J5o"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-4">
+<p class="text-white font-label-bold text-sm">Surf_City.webp</p>
+<div class="flex gap-2 mt-2">
+<button class="p-1.5 bg-white/20 backdrop-blur-md rounded-lg text-white hover:bg-white/40 transition-colors">
+<span class="material-symbols-outlined text-[18px]">edit</span>
+</button>
+<button class="p-1.5 bg-white/20 backdrop-blur-md rounded-lg text-white hover:bg-white/40 transition-colors">
+<span class="material-symbols-outlined text-[18px]">delete</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Bottom Nav Bar (Mobile Only) -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-4 pt-2 md:hidden bg-surface/65 backdrop-blur-xl border-t border-white/40 shadow-[0px_-10px_30px_rgba(0,109,119,0.1)] rounded-t-xl">
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary transition-opacity" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-sm text-label-sm">Inicio</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-primary text-on-primary rounded-full px-4 py-1 scale-110 duration-300 ease-out" href="#">
+<span class="material-symbols-outlined">rebase_edit</span>
+<span class="font-label-sm text-label-sm">Crear</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary transition-opacity" href="#">
+<span class="material-symbols-outlined">style</span>
+<span class="font-label-sm text-label-sm">Mi marca</span>
+</a>
+</nav>
+<!-- Micro-interaction Script -->
+<script>
+        // Simple drag and drop visual state
+        const dropZone = document.querySelector('.glass-panel.border-dashed');
+        
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, e => {
+                e.preventDefault();
+                dropZone.classList.add('border-primary', 'bg-primary/5');
+            });
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, e => {
+                e.preventDefault();
+                dropZone.classList.remove('border-primary', 'bg-primary/5');
+            });
+        });
+
+        // Add subtle parallax effect to the glass panels
+        document.addEventListener('mousemove', (e) => {
+            const panels = document.querySelectorAll('.glass-panel');
+            const mouseX = e.clientX / window.innerWidth;
+            const mouseY = e.clientY / window.innerHeight;
+            
+            panels.forEach(panel => {
+                const speed = 5;
+                const x = (window.innerWidth / 2 - e.pageX) / speed / 10;
+                const y = (window.innerHeight / 2 - e.pageY) / speed / 10;
+                // Only very subtle translation
+                panel.style.transform = `translate(${x}px, ${y}px)`;
+            });
+        });
+    </script>
+</body></html>

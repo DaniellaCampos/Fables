@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+
+<html class="light" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@700;800&amp;family=Plus+Jakarta+Sans:wght@400;500&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "outline-variant": "#bec8ca",
+                    "on-error-container": "#93000a",
+                    "on-tertiary-fixed-variant": "#594400",
+                    "surface-container-high": "#eae8e4",
+                    "primary": "#00535b",
+                    "background": "#fbf9f5",
+                    "surface-tint": "#006972",
+                    "primary-fixed-dim": "#82d3de",
+                    "on-primary-fixed": "#001f23",
+                    "secondary-fixed-dim": "#ffb59f",
+                    "on-surface-variant": "#3e494a",
+                    "on-primary-container": "#9becf7",
+                    "secondary-container": "#fe6f42",
+                    "surface": "#fbf9f5",
+                    "surface-dim": "#dbdad6",
+                    "tertiary-container": "#7a5f0b",
+                    "surface-bright": "#fbf9f5",
+                    "on-secondary-fixed-variant": "#852300",
+                    "on-surface": "#1b1c1a",
+                    "surface-container-lowest": "#ffffff",
+                    "on-tertiary": "#ffffff",
+                    "on-secondary": "#ffffff",
+                    "tertiary-fixed": "#ffdf96",
+                    "on-secondary-container": "#631800",
+                    "on-tertiary-container": "#ffdb87",
+                    "on-primary-fixed-variant": "#004f56",
+                    "inverse-surface": "#30312e",
+                    "inverse-on-surface": "#f2f0ed",
+                    "inverse-primary": "#82d3de",
+                    "surface-variant": "#e4e2de",
+                    "secondary": "#ac3509",
+                    "surface-container": "#efeeea",
+                    "on-secondary-fixed": "#3a0a00",
+                    "tertiary": "#5e4800",
+                    "on-primary": "#ffffff",
+                    "on-tertiary-fixed": "#251a00",
+                    "on-error": "#ffffff",
+                    "primary-container": "#006d77",
+                    "surface-container-low": "#f5f3ef",
+                    "secondary-fixed": "#ffdbd0",
+                    "primary-fixed": "#9ff0fb",
+                    "error": "#ba1a1a",
+                    "tertiary-fixed-dim": "#e7c269",
+                    "on-background": "#1b1c1a",
+                    "surface-container-highest": "#e4e2de",
+                    "outline": "#6f797a",
+                    "error-container": "#ffdad6"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "xs": "4px",
+                    "sm": "12px",
+                    "gutter": "16px",
+                    "container-margin": "24px",
+                    "xl": "80px",
+                    "base": "8px",
+                    "lg": "48px",
+                    "md": "24px"
+            },
+            "fontFamily": {
+                    "headline-lg": ["Epilogue"],
+                    "label-sm": ["Space Grotesk"],
+                    "label-bold": ["Space Grotesk"],
+                    "headline-lg-mobile": ["Epilogue"],
+                    "display-lg": ["Epilogue"],
+                    "display-md": ["Epilogue"],
+                    "body-md": ["Plus Jakarta Sans"],
+                    "body-lg": ["Plus Jakarta Sans"]
+            },
+            "fontSize": {
+                    "headline-lg": ["30px", {"lineHeight": "1.3", "fontWeight": "700"}],
+                    "label-sm": ["12px", {"lineHeight": "1.2", "fontWeight": "500"}],
+                    "label-bold": ["14px", {"lineHeight": "1.2", "fontWeight": "600"}],
+                    "headline-lg-mobile": ["24px", {"lineHeight": "1.3", "fontWeight": "700"}],
+                    "display-lg": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                    "display-md": ["36px", {"lineHeight": "1.2", "fontWeight": "700"}],
+                    "body-md": ["16px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                    "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.65);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+        }
+        .liquid-shadow {
+            box-shadow: 0px 10px 30px rgba(0, 109, 119, 0.1);
+        }
+        .sticker {
+            font-family: 'Space Grotesk', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+        .animate-float {
+            animation: float 6s ease-in-out infinite;
+        }
+        .animate-float-delayed {
+            animation: float 6s ease-in-out infinite;
+            animation-delay: 2s;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body-md min-h-screen selection:bg-primary-fixed selection:text-on-primary-fixed overflow-hidden">
+<!-- Main Layout Container -->
+<main class="flex min-h-screen w-full">
+<!-- Left Column: Authentication Content -->
+<section class="w-full md:w-[45%] flex flex-col justify-center px-container-margin md:px-xl relative z-10">
+<!-- Brand Identity Anchor -->
+<div class="mb-lg">
+<h1 class="font-headline-lg text-headline-lg text-primary tracking-tight mb-2">
+                    Creator’s Closet
+                </h1>
+<div class="h-1 w-12 bg-secondary rounded-full"></div>
+</div>
+<!-- Login Content -->
+<div class="max-w-md">
+<h2 class="font-display-lg text-display-lg text-on-surface mb-md">
+                    Tu contenido visual, <span class="text-primary italic">sin complicarte.</span>
+</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant mb-lg pr-md">
+                    Empodera tu marca turística con las mejores herramientas de diseño y marketing del Pulgarcito. Inspiración salvadoreña en cada pixel.
+                </p>
+<!-- Auth Action -->
+<button class="w-full flex items-center justify-center gap-base px-md py-4 bg-surface-container-lowest border border-outline-variant rounded-xl liquid-shadow hover:bg-surface-container transition-all group active:scale-[0.98]">
+<svg class="w-6 h-6" viewbox="0 0 24 24">
+<path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"></path>
+<path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"></path>
+<path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"></path>
+<path d="M12 5.38c1.62 0 3.06.56 4.21 1.66l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"></path>
+</svg>
+<span class="font-label-bold text-label-bold text-on-surface">Continuar con Google</span>
+</button>
+<!-- Footer Context -->
+<div class="mt-xl flex flex-wrap gap-md items-center opacity-60">
+<span class="font-label-sm text-label-sm uppercase tracking-widest text-outline">San Salvador, SV</span>
+<div class="w-1 h-1 bg-outline rounded-full"></div>
+<span class="font-label-sm text-label-sm">Privacy Policy</span>
+<div class="w-1 h-1 bg-outline rounded-full"></div>
+<span class="font-label-sm text-label-sm">Terms</span>
+</div>
+</div>
+</section>
+<!-- Right Column: Visual Composition -->
+<section class="hidden md:flex flex-1 bg-surface-container relative items-center justify-center overflow-hidden">
+<!-- Atmospheric Background Element -->
+<div class="absolute inset-0 z-0">
+<div class="absolute top-[-10%] right-[-10%] w-[60%] h-[60%] rounded-full bg-secondary-fixed opacity-20 blur-[120px]"></div>
+<div class="absolute bottom-[-10%] left-[-10%] w-[60%] h-[60%] rounded-full bg-primary-fixed opacity-30 blur-[120px]"></div>
+</div>
+<!-- Bento-style Asymmetric Visual Stack -->
+<div class="relative w-[85%] h-[80%] max-w-4xl z-10">
+<!-- Main Image: Editorial Tourism Shot -->
+<div class="absolute top-0 right-0 w-3/4 h-3/4 rounded-[32px] overflow-hidden liquid-shadow animate-float border-4 border-surface-container-lowest">
+<img class="w-full h-full object-cover" data-alt="A breathtaking high-angle editorial photograph of the Santa Ana volcano in El Salvador during sunrise. The sky is a gradient of soft peach and liquid teal. The lush green vegetation of the caldera is vibrant, captured with a professional 35mm aesthetic. The lighting is soft and golden, reflecting the premium Newspring Liquid brand identity." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAN6LGKQHZLVPRIClV2jDM2WWMZ2YK5cPNqgt7EWuFaH1V_ua-3v8lsHudlY11kbsnnq7ooX5CAYYZhcfm4KEXCAQobWGnX2H5DH9fwQ3j8hi6zRZJxiSPdGcPFysqqiNW80FbWh-bL4UosUNKmqBylIem4XI3JzUBVQ3CI_RjmloUFTZYTUCp4wtwRt8M4OoakXM_bq4LLGpbQj8tQL9s_6D9WqKg8Y92OY2kjOx5qxcgoq1HxoMIJhcWlBU4sVRRe4DzceGLeOGA"/>
+</div>
+<!-- Glass Card 1: Color Palette Tool -->
+<div class="absolute bottom-10 left-0 w-64 glass-panel p-gutter rounded-[24px] liquid-shadow animate-float-delayed">
+<div class="flex justify-between items-center mb-sm">
+<span class="font-label-bold text-label-bold text-primary sticker">Paleta: Surf City</span>
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">palette</span>
+</div>
+<div class="flex gap-xs">
+<div class="h-12 flex-1 rounded-lg bg-[#006D77] liquid-shadow"></div>
+<div class="h-12 flex-1 rounded-lg bg-[#82D3DE] liquid-shadow"></div>
+<div class="h-12 flex-1 rounded-lg bg-[#FF7043] liquid-shadow"></div>
+<div class="h-12 flex-1 rounded-lg bg-[#FFD97D] liquid-shadow"></div>
+</div>
+</div>
+<!-- Glass Card 2: User Metric/Sticker -->
+<div class="absolute top-20 left-10 glass-panel px-md py-sm rounded-full flex items-center gap-sm liquid-shadow animate-float border-primary/20">
+<div class="w-10 h-10 rounded-full overflow-hidden border-2 border-white">
+<img class="w-full h-full object-cover" data-alt="A close-up professional portrait of a cheerful Salvadoran woman in her late 20s, working as a tourism entrepreneur. She has a warm smile and is wearing casual chic clothing. The background is softly blurred with hints of a beach setting, maintaining a bright and optimistic editorial atmosphere." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAARnbGwlzFm2JyANyM7qqZdN20WF9zjp7zxdIgM4ZLDsUpoc0GdUIIODLCVYR5198OCUiM_btz80mR8BChR6WaP-KksmUqZzqUC7ixBw-jtCmNOdV4SEhhzGor5mvBjhzUEqwucjk1j3Ee5c4uz7eg4a0gQYPyw02bdP5bweodWoJUDySeDEiMXw5_IxULZXdmttb9MJ0zo7psp5-GBXeAgztHx43VTtyDWUdf8eBy1o-Wpn5iY3wenFaEa76v9_YGBO61M3N3kEY"/>
+</div>
+<div>
+<p class="font-label-bold text-label-bold text-on-surface">@Gaby_Tours</p>
+<p class="text-[10px] uppercase font-bold text-secondary">Pro Creator</p>
+</div>
+</div>
+<!-- Secondary Image: Smaller Perspective -->
+<div class="absolute bottom-24 right-10 w-48 h-64 rounded-[24px] overflow-hidden liquid-shadow border-4 border-surface-container-lowest animate-float-delayed">
+<img class="w-full h-full object-cover" data-alt="A minimalist, top-down editorial shot of a tropical coffee cup and a local artisanal textile on a clean white wooden table. Soft shadows and high-key lighting create a refreshing, modern Caribbean morning vibe. The image is part of a premium tourism marketing kit, featuring vibrant natural textures." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBKG1WYZY-y3EQniaCKdJ9JKjTYGKynbpIDB1T95Xso4apc03dDRn_G6hF0CT_ohOhXKgFL9zQVDLXt7i8Z1SKqX6tziObAL-Z7Hh_9vAp6Ob5cOXlhLkhUdtP-pWNG4CahlOU0VtAu-rO6T3QKSlSgG9z4Hm6SvJs_0bkUpfhDhTT9qwZrbkmae_nLrfURVIouECAeMq2V57DjPNLhRIRd67mBJif6NQwg4Cf3DuUVpeTAAuRJmb67_EOwPbWbx4A6ycecV23Ewtk"/>
+</div>
+<!-- Floating Sticker Badge -->
+<div class="absolute top-[45%] right-[-20px] bg-tertiary-fixed text-on-tertiary-fixed font-bold px-base py-xs rounded-lg rotate-12 sticker text-[10px] shadow-lg border border-white/40">
+                    El Salvador's Choice
+                </div>
+<!-- Interactive Sparkle Elements -->
+<div class="absolute top-1/4 right-1/4">
+<span class="material-symbols-outlined text-secondary text-3xl animate-pulse" style="font-variation-settings: 'FILL' 1;">spark</span>
+</div>
+</div>
+<!-- Page-level Interactive Element: Floating particles -->
+<canvas class="absolute inset-0 pointer-events-none opacity-40" id="atmosphereCanvas"></canvas>
+</section>
+</main>
+<script>
+        // Atmosphere canvas for subtle light particles
+        const canvas = document.getElementById('atmosphereCanvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+
+        function initCanvas() {
+            canvas.width = canvas.parentElement.clientWidth;
+            canvas.height = canvas.parentElement.clientHeight;
+        }
+
+        class Particle {
+            constructor() {
+                this.reset();
+            }
+            reset() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 3 + 1;
+                this.speedX = Math.random() * 0.5 - 0.25;
+                this.speedY = Math.random() * 0.5 - 0.25;
+                this.opacity = Math.random() * 0.5;
+            }
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                if (this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height) {
+                    this.reset();
+                }
+            }
+            draw() {
+                ctx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        function setup() {
+            initCanvas();
+            for (let i = 0; i < 30; i++) {
+                particles.push(new Particle());
+            }
+            animate();
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+            requestAnimationFrame(animate);
+        }
+
+        window.addEventListener('resize', initCanvas);
+        setup();
+    </script>
+</body></html>

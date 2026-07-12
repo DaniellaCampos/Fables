@@ -1,19 +1,20 @@
-<<<<<<< HEAD
-.env
-__pycache__/
-*.pyc
+# Dependencias de Node
+node_modules/
+
+# Archivos compilados
+dist/
+build/
+
+# Entornos virtuales de Python
 venv/
 .venv/
-=======
-# Entornos virtuales
-venv/
 env/
 
-# Archivos de caché de Python
+# Caché de Python
 __pycache__/
 *.pyc
 
-# Variables de entorno y credenciales (¡SÚPER IMPORTANTE!)
+# Variables de entorno y credenciales
 .env
+.env.*
 firebase_credenciales.json
->>>>>>> feature/infraestructura-base
