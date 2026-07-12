@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getForecast } from '../../services/api';
+import { getForecast, logOpportunityTelemetry } from '../../services/api';
+import { useApp } from '../../context/AppContext';
 
 /**
  * Forma de cada oportunidad devuelta por GET /api/forecast (ver
@@ -39,12 +40,15 @@ function Skeleton({ className = '' }) {
 }
 
 export default function OpportunityRadarCard({ className = '' }) {
+  const { brand } = useApp();
   const [status, setStatus] = useState('loading'); // 'loading' | 'ready' | 'error'
   const [top, setTop] = useState(/** @type {Opportunity|null} */(null));
   const nav = useNavigate();
 
   useEffect(() => {
     let cancelled = false;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setStatus('loading');
 
     (async () => {
       try {
@@ -62,11 +66,33 @@ export default function OpportunityRadarCard({ className = '' }) {
     })();
 
     return () => { cancelled = true; };
-  }, []);
+  }, [brand.location, brand.service]);
 
   const handleCta = () => {
+    // Registrar telemetría de forma no bloqueante
+    if (top) {
+      const signalsActive = [];
+      if (top.signals) {
+        if (top.signals.is_holiday) signalsActive.push('holiday');
+        if (top.signals.is_friday_or_saturday || top.signals.is_weekend) signalsActive.push('weekend');
+        if (top.signals.weather_condition && !top.signals.is_rainy) signalsActive.push('sunny');
+        if (top.signals.is_rainy) signalsActive.push('rainy');
+      }
+
+      logOpportunityTelemetry({
+        date_logged: new Date().toISOString(),
+        opportunity_date: top.date,
+        signals_active: signalsActive,
+        action: 'clicked_cta'
+      })
+        .then(() => {
+          console.log('telemetry ok');
+        })
+        .catch(() => {});
+    }
+
     const inspiration = top
-      ? `${top.reason} este ${top.weekday.toLowerCase()} — horario sugerido: ${top.suggestedTimeSlot}`
+      ? `${top.reason || 'Día recomendado'} este ${(top.weekday || 'día').toLowerCase()} — horario sugerido: ${top.suggestedTimeSlot || 'Todo el día'}`
       : FALLBACK_TIP;
 
     nav('/create/closet', {

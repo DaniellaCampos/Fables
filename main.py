@@ -61,7 +61,7 @@ async def add_charset_to_json_response(request, call_next):
 # ---------------------------------------------------------
 # 2. IMPORTACIONES LOCALES
 # ---------------------------------------------------------
-from api.schemas import OnboardingData, ClosetGenerateRequest
+from api.schemas import OnboardingData, ClosetGenerateRequest, OpportunityActionLog, DesignData
 from security import verificar_token
 from services.ai_service import generate_campaign_content
 from services.vision_service import get_images
@@ -90,7 +90,22 @@ async def guardar_onboarding(datos: OnboardingData, usuario: dict = Depends(veri
         # Guardar en Firestore de forma asíncrona para no bloquear el event loop.
         # Usamos merge=True para que las actualizaciones parciales no borren campos previos.
         doc_ref = db.collection("usuarios").document(uid)
+<<<<<<< HEAD
         await anyio.to_thread.run_sync(functools.partial(doc_ref.set, datos.dict(), merge=True))
+=======
+        
+        def guardar_firestore():
+            doc_ref.set(datos.dict(), merge=True)
+            
+        await anyio.to_thread.run_sync(guardar_firestore)
+        
+        # Sincronización fire-and-forget a HubSpot CRM (Fase 2)
+        try:
+            from services.hubspot_service import sync_brand_to_hubspot
+            await anyio.to_thread.run_sync(sync_brand_to_hubspot, datos.dict(), usuario.get("email"))
+        except Exception as hs_err:
+            print(f"HubSpot background trigger failed: {hs_err}")
+>>>>>>> 4135ec4619711a49dd5012bffc7d7aa9eb85d06a
         
         return {"mensaje": "ADN de marca guardado con éxito", "uid_procesado": uid}
     except Exception as e:
@@ -161,6 +176,26 @@ async def obtener_forecast(days: int = 90, usuario: dict = Depends(verificar_tok
     }
 
 
+# RUTA 1d: Telemetría - Registrar acciones sobre el radar de oportunidades
+@app.post("/api/telemetry/opportunity")
+async def log_opportunity_action(datos: OpportunityActionLog, usuario: dict = Depends(verificar_token)):
+    if db is None:
+        raise HTTPException(status_code=500, detail="Servicio de base de datos no disponible")
+
+    uid = usuario["uid"]
+    log_dict = datos.dict()
+    log_dict["user_id"] = uid
+    # This data feeds the future ML forecasting model (Level 2/3 roadmap).
+
+    try:
+        # Guardar en Firestore de forma asíncrona para no bloquear el event loop
+        doc_ref = db.collection("opportunity_actions").document()
+        await anyio.to_thread.run_sync(doc_ref.set, log_dict)
+        return {"mensaje": "Log de telemetría guardado con éxito", "id": doc_ref.id}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"No se pudo guardar la telemetría: {str(e)}")
+
+
 # RUTA 2: El Armario - Generación de campaña completa (IA + Imágenes)
 @app.post("/api/closet/generate")
 async def generar_contenido(peticion: ClosetGenerateRequest, usuario: dict = Depends(verificar_token)):
@@ -206,6 +241,7 @@ async def generar_contenido(peticion: ClosetGenerateRequest, usuario: dict = Dep
             "instagram_copy": ai_response.get("instagram_copy"),
             "hashtags": ai_response.get("hashtags"),
             "image_recommendation": ai_response.get("image_recommendation"),
+            "suggested_music": ai_response.get("suggested_music", "Música acústica e instrumental suave"),
             "images": image_urls,
             "brand_adn": {
                 "nicho": brand_adn.nicho_negocio,
@@ -228,3 +264,46 @@ async def generar_contenido(peticion: ClosetGenerateRequest, usuario: dict = Dep
         import traceback
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Error interno al generar la campaña: {str(e)}")
+
+
+# RUTA 3: Guardar un diseño en el historial de Firestore
+@app.post("/api/designs")
+async def guardar_diseno(datos: DesignData, usuario: dict = Depends(verificar_token)):
+    if db is None:
+        raise HTTPException(status_code=500, detail="Servicio de base de datos no disponible")
+    
+    uid = usuario["uid"]
+    diseno_dict = datos.dict()
+    diseno_dict["uid"] = uid
+    diseno_dict["createdAt"] = datetime.utcnow().isoformat()
+    
+    try:
+        doc_ref = db.collection("designs").document()
+        await anyio.to_thread.run_sync(doc_ref.set, diseno_dict)
+        return {"mensaje": "Diseño guardado con éxito", "id": doc_ref.id}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error al guardar el diseño: {str(e)}")
+
+
+# RUTA 4: Obtener todos los diseños guardados del usuario desde Firestore
+@app.get("/api/designs")
+async def obtener_disenos(usuario: dict = Depends(verificar_token)):
+    if db is None:
+        raise HTTPException(status_code=500, detail="Servicio de base de datos no disponible")
+    
+    uid = usuario["uid"]
+    try:
+        collection_ref = db.collection("designs").where("uid", "==", uid)
+        docs = await anyio.to_thread.run_sync(collection_ref.get)
+        
+        disenos = []
+        for doc in docs:
+            d = doc.to_dict()
+            d["id"] = doc.id
+            disenos.append(d)
+            
+        # Ordenar por fecha de creación descendente
+        disenos.sort(key=lambda x: x.get("createdAt", ""), reverse=True)
+        return disenos
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error al obtener los diseños: {str(e)}")

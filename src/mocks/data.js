@@ -1,7 +1,7 @@
 // Re-export organized mocks from separate files
 export { formats, categoryDefs } from './mockFormats';
 export { templates } from './mockTemplates';
-export { mockImages } from './mockImages';
+export { mockImages, trendImages } from './mockImages';
 export { typographies } from './mockTypography';
 export { filters } from './mockFilters';
 export { palettes } from './mockPalettes';

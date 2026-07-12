@@ -135,3 +135,30 @@ export async function generateCampaign({ idea_usuario, formato, objetivo }) {
     body: JSON.stringify(payload)
   });
 }
+
+/**
+ * Registra acciones de telemetría sobre el radar de oportunidades.
+ */
+export async function logOpportunityTelemetry(payload) {
+  return await request("/api/telemetry/opportunity", {
+    method: "POST",
+    body: JSON.stringify(payload)
+  });
+}
+
+/**
+ * Guarda un diseño/pieza personalizada en Firestore a través del backend.
+ */
+export async function apiSaveDesign(designData) {
+  return await request("/api/designs", {
+    method: "POST",
+    body: JSON.stringify(designData)
+  });
+}
+
+/**
+ * Obtiene todos los diseños guardados del usuario actual a través del backend.
+ */
+export async function apiGetUserDesigns() {
+  return await request("/api/designs", { method: "GET" });
+}

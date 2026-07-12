@@ -207,10 +207,17 @@ export default function BrandDNACard({ className = '' }) {
           </p>
         </div>
 
-        <div className="flex flex-col gap-4">
-          <DnaBlock label="Propósito de marca" value={data.proposito_marca} />
-          <DnaBlock label="Enemigo de marca" value={data.enemigo_marca} />
+        <div className="grid grid-cols-2 gap-x-4 gap-y-5">
+          <DnaBlock label="Nombre del negocio" value={data.name || brand.name} />
+          <DnaBlock label="Tipo de servicio" value={data.nicho_negocio} />
+          <DnaBlock label="Ubicación" value={data.ubicacion} />
           <DnaBlock label="Tono de voz" value={data.tono_voz} />
+          <div className="col-span-2">
+            <DnaBlock label="Propósito de marca" value={data.proposito_marca} />
+          </div>
+          <div className="col-span-2">
+            <DnaBlock label="Enemigo de marca" value={data.enemigo_marca} />
+          </div>
         </div>
       </div>
 

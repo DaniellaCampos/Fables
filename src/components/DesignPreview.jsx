@@ -5,8 +5,10 @@ export default function DesignPreview({ compact = false, design, addedPiece }) {
   const { project, images, brand, campaign } = useApp();
   const current = design || project;
   
-  // Resolve active image
-  const image = images[current.selectedImage] || images[0];
+  // Resolve active image (using user uploaded images if available to align with the edit pool)
+  const userUploadedImages = images.filter(img => img.id.startsWith('local-'));
+  const availableImages = userUploadedImages.length > 0 ? userUploadedImages : images;
+  const image = availableImages[current.selectedImage] || availableImages[0];
   
   // Resolve brand colors dynamically
   let pal = palettes[current.selectedPalette] || palettes[0];

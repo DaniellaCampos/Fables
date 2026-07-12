@@ -77,6 +77,8 @@ export const loginWithGoogle = async () => {
 export const loginWithEmail = async (email, password) => {
   if (isMock) {
     await new Promise((resolve) => setTimeout(resolve, 800));
+    
+    // 1. Verificar contra el usuario por defecto de desarrollo
     if (email === "admin123@tucorreo.com" && password === "admin123") {
       return {
         uid: "mock-user-12345",
@@ -86,6 +88,21 @@ export const loginWithEmail = async (email, password) => {
         token: "mock-token-jwt-secret-key-123"
       };
     }
+    
+    // 2. Verificar contra usuarios registrados en localStorage
+    const localUsers = JSON.parse(localStorage.getItem('cc_mock_users') || '[]');
+    const matched = localUsers.find(u => u.email.toLowerCase() === email.toLowerCase() && u.password === password);
+    
+    if (matched) {
+      return {
+        uid: matched.uid,
+        displayName: matched.displayName,
+        email: matched.email,
+        photoURL: `https://api.dicebear.com/7.x/adventurer/svg?seed=${matched.displayName}`,
+        token: "mock-token-jwt-secret-key-123"
+      };
+    }
+    
     throw new Error("auth/wrong-password");
   }
 
@@ -104,11 +121,27 @@ export const loginWithEmail = async (email, password) => {
 export const registerWithEmail = async (email, password, displayName) => {
   if (isMock) {
     await new Promise((resolve) => setTimeout(resolve, 800));
-    return {
-      uid: "mock-user-temp",
+    
+    const newUser = {
+      uid: `mock-user-${Date.now()}`,
       displayName: displayName || email.split('@')[0],
       email: email,
-      photoURL: `https://api.dicebear.com/7.x/adventurer/svg?seed=${displayName || 'temp'}`,
+      password: password
+    };
+    
+    const localUsers = JSON.parse(localStorage.getItem('cc_mock_users') || '[]');
+    if (localUsers.some(u => u.email.toLowerCase() === email.toLowerCase())) {
+      throw new Error("auth/email-already-in-use");
+    }
+    
+    localUsers.push(newUser);
+    localStorage.setItem('cc_mock_users', JSON.stringify(localUsers));
+    
+    return {
+      uid: newUser.uid,
+      displayName: newUser.displayName,
+      email: newUser.email,
+      photoURL: `https://api.dicebear.com/7.x/adventurer/svg?seed=${newUser.displayName}`,
       token: "mock-token-jwt-secret-key-123"
     };
   }

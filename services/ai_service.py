@@ -40,7 +40,8 @@ SYSTEM_PROMPT = (
     '  "instagram_copy": "Texto persuasivo del post de Instagram, con un gancho atrapante, cuerpo estructurado, emojis y llamada a la acción (CTA) clara.",\n'
     '  "hashtags": ["hashtag1", "hashtag2", "hashtag3", "hashtag4", "hashtag5"],\n'
     '  "image_recommendation": "Descripción en español del tipo de imagen o concepto visual que acompañaría bien este texto.",\n'
-    '  "search_keywords": "2 a 3 palabras clave en inglés, separadas por espacios, óptimas para buscar imágenes realistas y estéticas en Unsplash (ejemplo: \'cozy coffee workspace\' o \'beach sunset adventure\')"\n'
+    '  "search_keywords": "2 a 3 palabras clave en inglés, separadas por espacios, óptimas para buscar imágenes realistas y estéticas en Unsplash (ejemplo: \'cozy coffee workspace\' o \'beach sunset adventure\')",\n'
+    '  "suggested_music": "Recomendación específica de música o audio de tendencia para acompañar la publicación en Instagram/Facebook, describiendo el instrumento, género o vibra (ej. \'Canción acústica instrumental alegre\', \'Lofi beats suaves relajantes\', \'Pop acústico en tendencia\')"\n'
     "}"
 )
 
@@ -90,5 +91,6 @@ async def generate_campaign_content(brand_adn: OnboardingData, idea_usuario: str
             "hashtags": ["marketing", brand_adn.vibra_marca.lower(), "negocio", "post", "creadores"],
             "image_recommendation": f"Una imagen que represente la vibra {brand_adn.vibra_marca} del negocio.",
             "search_keywords": f"{brand_adn.vibra_marca.lower()} business",
+            "suggested_music": "Música acústica suave y relajante",
             "error": str(e)
         }

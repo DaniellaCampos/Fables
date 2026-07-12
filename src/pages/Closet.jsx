@@ -13,7 +13,8 @@ import {
   templates,
   textPositions,
   typographies,
-  mockImages
+  mockImages,
+  trendImages
 } from '../mocks/data';
 import { useApp } from '../context/AppContext';
 import DesignPreview from '../components/DesignPreview';
@@ -34,15 +35,16 @@ export default function Closet() {
     project, 
     setProject, 
     images = mockImages, 
-    setImages,
-    user, 
     campaign, 
     setCampaign,
     saveDesign,
-    brand
+    brand,
+    unsplashImages,
+    setUnsplashImages
   } = useApp();
   const nav = useNavigate();
   const location = useLocation();
+  console.log("Closet location state:", location.state);
 
   const initialFormatId = location.state?.format || project.format || 'story';
   const [stage, setStage] = useState(location.state?.skipRecommendation ? 'template' : 'recommendation');
@@ -56,7 +58,11 @@ export default function Closet() {
   const [addedPiece, setAddedPiece] = useState('');
 
   // Estados para exportar (Guardar y Descargar)
-  const [designName, setDesignName] = useState('Fin de semana en el lago');
+  const [designName, setDesignName] = useState(
+    project.name || (location.state?.inspiration 
+      ? (location.state.inspiration.length > 35 ? location.state.inspiration.substring(0, 35) + '...' : location.state.inspiration)
+      : 'Fin de semana en el lago')
+  );
   const [saving, setSaving] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [toast, setToast] = useState('');
@@ -145,6 +151,18 @@ export default function Closet() {
   const [idea, setIdea] = useState(
     location.state?.inspiration || "Lanzamiento de croissants de chocolate calientes los domingos"
   );
+
+  // Sincronizar el input de idea cuando cambie el estado de la ubicación (Radar/Calendario)
+  useEffect(() => {
+    if (location.state?.inspiration) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setIdea(location.state.inspiration);
+      const nameVal = location.state.inspiration.length > 35 ? location.state.inspiration.substring(0, 35) + '...' : location.state.inspiration;
+      setDesignName(nameVal);
+      setProject(p => ({ ...p, name: nameVal }));
+    }
+  }, [location.state?.inspiration]);
+
   const [objective, setObjective] = useState(
     location.state?.objective || project.objective || "Vender"
   );
@@ -188,9 +206,11 @@ export default function Closet() {
 
   // Construir categorías de diseño asociándoles sus elementos dinámicos
   const categories = useMemo(() => {
+    const userUploaded = images.filter(img => img.id.startsWith('local-'));
     const itemMap = {
       template: templates,
-      image: images,
+      image: userUploaded.length > 0 ? userUploaded : images,
+      trends: [...unsplashImages, ...trendImages],
       typography: typographies,
       filter: filters,
       palette: dynamicPalettes,
@@ -204,7 +224,7 @@ export default function Closet() {
       ...cat,
       items: itemMap[cat.id] || []
     }));
-  }, [images, headlinesList, dynamicPalettes]);
+  }, [images, headlinesList, dynamicPalettes, unsplashImages]);
 
   const activeCategory = categories[activeIndex];
   const candidateIndex =
@@ -333,7 +353,7 @@ export default function Closet() {
 
       setLoadingMsg("Buscando 3 imágenes estéticas de alta calidad en Unsplash...");
       
-      // Inyectar imágenes devueltas por la API en el AppContext sin borrar las del usuario
+      // Inyectar imágenes devueltas por la API en unsplashImages en lugar de images
       if (result.images && result.images.length > 0) {
         const formattedImages = result.images.map((url, i) => ({
           id: `unsplash-${Date.now()}-${i}`,
@@ -341,11 +361,7 @@ export default function Closet() {
           tag: 'Sugerida ✨',
           url: url
         }));
-        setImages(prev => {
-          const currentImages = Array.isArray(prev) ? prev : [];
-          const filteredNew = formattedImages.filter(f => !currentImages.some(img => img.url === f.url));
-          return [...currentImages, ...filteredNew];
-        });
+        setUnsplashImages(formattedImages);
       }
 
       // Guardar el copy e información en el estado de la campaña
@@ -682,7 +698,10 @@ export default function Closet() {
                   <input
                     type="text"
                     value={designName}
-                    onChange={(e) => setDesignName(e.target.value)}
+                    onChange={(e) => {
+                      setDesignName(e.target.value);
+                      setProject(p => ({ ...p, name: e.target.value }));
+                    }}
                     placeholder="Ej. Promo Fin de Semana"
                     style={{
                       padding: '0.65rem 0.85rem',
@@ -700,8 +719,7 @@ export default function Closet() {
                   />
                 </div>
               </div>
-
-              <div style={{ display: 'grid', gap: '8px', marginTop: '12px' }}>
+              <div style={{ display: 'grid', gap: '8px', marginTop: '12px', marginBottom: '16px' }}>
                 <Button onClick={handleSaveDesign} disabled={saving} style={{ gap: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <Save size={16} />
                   {saving ? 'Guardando...' : 'Guardar en Historial'}
@@ -712,6 +730,65 @@ export default function Closet() {
                   {downloading ? 'Descargando...' : 'Descargar Imagen'}
                 </Button>
               </div>
+
+              {/* Sugerencias de contenido para publicar */}
+              {campaign && (
+                <div className="campaign-metadata-box" style={{
+                  borderTop: '1px solid #e2d9c2',
+                  paddingTop: '16px',
+                  marginTop: '16px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '14px',
+                  maxHeight: '42vh',
+                  overflowY: 'auto',
+                  paddingRight: '4px'
+                }}>
+                  {/* Música sugerida */}
+                  <div style={{ background: '#fbf7ed', borderLeft: '3px solid var(--yellow)', padding: '10px 12px', borderRadius: '8px' }}>
+                    <span style={{ fontSize: '0.7rem', fontWeight: 'bold', color: 'var(--yellow-ink)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: '2px' }}>
+                      🎵 AUDIO / MÚSICA RECOMENDADA
+                    </span>
+                    <p style={{ fontSize: '0.8rem', color: '#172a35', margin: 0, fontWeight: '600', lineHeight: '1.3' }}>
+                      {campaign.suggested_music || 'Música acústica e instrumental suave'}
+                    </p>
+                  </div>
+
+                  {/* Descripción / Copy */}
+                  <div>
+                    <span style={{ fontSize: '0.7rem', fontWeight: 'bold', color: '#0b6670', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: '4px' }}>
+                      📝 DESCRIPCIÓN DE PUBLICACIÓN
+                    </span>
+                    <div style={{
+                      background: '#ffffff',
+                      border: '1px solid #e2d9c2',
+                      borderRadius: '8px',
+                      padding: '10px',
+                      fontSize: '0.8rem',
+                      color: '#172a35',
+                      lineHeight: '1.4',
+                      maxHeight: '110px',
+                      overflowY: 'auto',
+                      whiteSpace: 'pre-wrap',
+                      fontFamily: 'inherit'
+                    }}>
+                      {campaign.instagram_copy || 'Campaña sin texto generado.'}
+                    </div>
+                  </div>
+
+                  {/* Hashtags */}
+                  {campaign.hashtags && campaign.hashtags.length > 0 && (
+                    <div>
+                      <span style={{ fontSize: '0.7rem', fontWeight: 'bold', color: '#0b6670', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: '4px' }}>
+                        🏷️ HASHTAGS RECOMENDADOS
+                      </span>
+                      <p style={{ fontSize: '0.78rem', color: '#5a6e79', margin: 0, lineHeight: '1.4' }}>
+                        {campaign.hashtags.map(tag => `#${tag}`).join(' ')}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           ) : (
             <div className="stage-option-info">
@@ -786,8 +863,8 @@ export default function Closet() {
           )}
         </div>
 
-        {/* Carrusel Flotante - solo para categorías que no son export ni ajustes directos */}
-        {activeCategory?.id !== 'export' && !activeCategory?.direct && activeCategory?.items.length > 0 && (
+        {/* Carrusel Flotante - para todas las categorías excepto export */}
+        {activeCategory?.id !== 'export' && activeCategory?.items.length > 0 && (
           <div className="carousel-section">
             <FloatingAccessoryCarousel
               items={activeCategory.items}

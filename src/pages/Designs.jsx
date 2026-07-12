@@ -4,7 +4,7 @@ import { Badge, Button } from '../components/ui';
 import { useApp } from '../context/AppContext';
 
 export default function Designs() {
-  const { savedDesigns, setProject } = useApp();
+  const { savedDesigns, setProject, setCampaign } = useApp();
   const nav = useNavigate();
 
   // If there are no saved designs, fallback to default mocks so the page isn't empty
@@ -14,7 +14,10 @@ export default function Designs() {
         type: d.format === 'story' ? 'Historia' : d.format === 'post' ? 'Post' : 'Carrusel',
         url: d.imageUrl,
         editedText: 'Creado recientemente',
-        settings: d.projectSettings
+        settings: d.projectSettings,
+        campaignCopy: d.campaignCopy || '',
+        campaignHashtags: d.campaignHashtags || [],
+        campaignMusic: d.campaignMusic || ''
       }))
     : [
         { 
@@ -41,6 +44,12 @@ export default function Designs() {
     if (item.settings) {
       setProject(item.settings);
     }
+    // Restaurar los datos de campaña asociados para que Preview pueda mostrarlos
+    setCampaign({
+      instagram_copy: item.campaignCopy || '',
+      hashtags: item.campaignHashtags || [],
+      suggested_music: item.campaignMusic || ''
+    });
     nav('/create/preview');
   };
 
@@ -50,7 +59,12 @@ export default function Designs() {
         <div>
           <Badge>TU COLECCIÓN</Badge>
           <h1>Mis diseños</h1>
-          <p>Ideas que guardaste para volver a usarlas o inspirarte.</p>
+          <p>
+            Ideas que guardaste para volver a usarlas o inspirarte.{" "}
+            <span style={{ color: "#e85f3d", fontWeight: "600" }}>
+              (Se eliminan automáticamente después de 90 días)
+            </span>
+          </p>
         </div>
         <Button onClick={() => nav('/create')}>
           <Plus />

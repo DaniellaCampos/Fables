@@ -104,7 +104,7 @@ export default function FloatingAccessoryCarousel({
 }
 
 function DefaultOption({ item, category, active }) {
-  if (category === 'image') {
+  if (category === 'image' || category === 'trends') {
     return (
       <div className="option-visual image-option">
         <img src={item.url} alt={item.name} />
