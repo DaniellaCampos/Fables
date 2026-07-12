@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, CloudSun, FileImage, Film, Images, Plus, RectangleVertical } from 'lucide-react';
+import { ArrowRight, CloudSun, FileImage, Film, Images, RectangleVertical } from 'lucide-react';
 import { useApp } from '../context/AppContext';
-import { Badge, Button, Card } from '../components/ui';
+import { Badge, Card } from '../components/ui';
 import { getForecast } from '../services/api';
 
 export default function Dashboard() {
@@ -107,10 +107,6 @@ export default function Dashboard() {
             Tu armario de diseño está listo. ¿Qué gran historia vamos a crear juntos hoy?
           </p>
         </div>
-        <Button onClick={() => nav('/create')} style={{ padding: '0.8rem 1.6rem', fontSize: '1rem', height: 'auto', boxShadow: '0 4px 14px rgba(11, 102, 112, 0.25)' }}>
-          <Plus />
-          Crear pieza
-        </Button>
       </header>
 
       <Card className="opportunity">
