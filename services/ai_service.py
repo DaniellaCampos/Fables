@@ -13,10 +13,27 @@ if not api_key:
 
 client = AsyncGroq(api_key=api_key)
 
+# Traduce cada arquetipo de Jung a rasgos de escritura concretos para la IA
+ARCHETYPE_GUIDE = {
+    "Heroe": "valiente, motivador, lenguaje de superacion y logro",
+    "Sabio": "analitico, confiable, usa datos y claridad, tono de autoridad",
+    "Explorador": "aventurero, libre, invita a descubrir algo nuevo",
+    "Inocente": "optimista, simple, honesto, evita cinismo",
+    "Hombre_Comun": "cercano, autentico, habla como un amigo, sin pretensiones",
+    "Bufon": "divertido, ironico, no se toma en serio, usa humor",
+    "Amante": "sensorial, calido, apela a la intimidad y el deseo",
+    "Cuidador": "protector, empatico, tranquilizador, enfocado en el bienestar",
+    "Gobernante": "autoritativo, exclusivo, lenguaje de prestigio y control",
+    "Creador": "innovador, expresivo, invita a imaginar e inventar",
+    "Mago": "transformador, casi magico, promete un cambio de estado",
+    "Rebelde": "disruptivo, desafiante, rompe reglas del sector",
+}
+
 # System Prompt experto en marketing y psicoanálisis de marca
 SYSTEM_PROMPT = (
     "Eres un psicólogo de marcas y redactor creativo de marketing de élite, especializado en Growth Marketing para microempresas.\n"
-    "Tu objetivo es crear copys altamente persuasivos que conecten emocionalmente con el público objetivo, basándote en la identidad de marca (el ADN de la marca).\n\n"
+    "Tu objetivo es crear copys altamente persuasivos que conecten emocionalmente con el público objetivo, basándote en la identidad de marca (el ADN de la marca).\n"
+    "El copy debe encarnar el arquetipo y el tono de voz indicados, evocar la emoción objetivo señalada, y diferenciarse implícitamente del 'enemigo de marca' sin nombrarlo directamente.\n\n"
     "Debes responder EXCLUSIVAMENTE con un objeto JSON válido, sin texto adicional, saludos o explicaciones fuera del JSON.\n"
     "La estructura del JSON debe ser exactamente la siguiente:\n"
     "{\n"
@@ -30,7 +47,8 @@ SYSTEM_PROMPT = (
 async def generate_campaign_content(brand_adn: OnboardingData, idea_usuario: str, formato: str, objetivo: str) -> dict:
     """
     Función asíncrona que conecta con Groq para generar el contenido persuasivo,
-    hashtags y recomendación visual basándose en el ADN de la marca.
+    hashtags y recomendación visual basándose en el ADN de la marca (incluyendo
+    su arquetipo, propósito, enemigo de marca, tono de voz y emoción objetivo).
     """
     user_prompt = (
         f"Genera una propuesta de campaña con las siguientes especificaciones:\n\n"
@@ -39,7 +57,13 @@ async def generate_campaign_content(brand_adn: OnboardingData, idea_usuario: str
         f"- Cliente Ideal: {brand_adn.cliente_ideal}\n"
         f"- Ubicación: {brand_adn.ubicacion}\n"
         f"- Color de Marca (HEX): {brand_adn.color_hex}\n"
-        f"- Vibra de la Marca: {brand_adn.vibra_marca}\n\n"
+        f"- Vibra de la Marca: {brand_adn.vibra_marca}\n"
+        f"- Arquetipo de Marca: {brand_adn.arquetipo_marca} "
+        f"(tono: {ARCHETYPE_GUIDE[brand_adn.arquetipo_marca]})\n"
+        f"- Propósito (por qué existe): {brand_adn.proposito_marca}\n"
+        f"- Se posiciona en contra de: {brand_adn.enemigo_marca}\n"
+        f"- Tono de voz: {brand_adn.tono_voz}\n"
+        f"- Emoción objetivo en el lector: {brand_adn.emocion_objetivo}\n\n"
         f"--- PETICIÓN DEL USUARIO ---\n"
         f"- Idea del Post: {idea_usuario}\n"
         f"- Formato: {formato}\n"
@@ -56,7 +80,7 @@ async def generate_campaign_content(brand_adn: OnboardingData, idea_usuario: str
             ],
             response_format={"type": "json_object"},
         )
-        
+
         content = response.choices[0].message.content
         return json.loads(content)
     except Exception as e:

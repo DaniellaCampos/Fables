@@ -1,4 +1,12 @@
+from typing import Literal
+
 from pydantic import BaseModel
+
+ArquetipoMarca = Literal[
+    "Heroe", "Sabio", "Explorador", "Inocente", "Hombre_Comun",
+    "Bufon", "Amante", "Cuidador", "Gobernante", "Creador", "Mago", "Rebelde",
+]
+TonoVoz = Literal["Formal", "Cercano"]
 
 # Modelo para cuando el usuario hace Onboarding por primera vez
 class OnboardingData(BaseModel):
@@ -7,6 +15,11 @@ class OnboardingData(BaseModel):
     ubicacion: str           # Ej: "Lago de Ilopango"
     color_hex: str           # Ej: "#FF5733"
     vibra_marca: str         # Ej: "Aventurera"
+    arquetipo_marca: ArquetipoMarca   # Ej: "Explorador"
+    proposito_marca: str     # Golden Circle - el "por que" existe la marca
+    enemigo_marca: str       # Contra que o quien se posiciona la marca
+    tono_voz: TonoVoz        # Formal o Cercano
+    emocion_objetivo: str    # Que debe sentir el cliente 3 segundos despues
 
 # Modelo para la generación de campaña en el Armario
 class ClosetGenerateRequest(BaseModel):
