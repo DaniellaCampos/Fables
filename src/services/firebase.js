@@ -1,12 +1,13 @@
 import { initializeApp } from "firebase/app";
-import { 
-  getAuth, 
-  GoogleAuthProvider, 
-  signInWithPopup, 
-  signOut, 
-  signInWithEmailAndPassword, 
-  createUserWithEmailAndPassword, 
-  updateProfile 
+import {
+  getAuth,
+  GoogleAuthProvider,
+  signInWithPopup,
+  signOut,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  updateProfile,
+  onAuthStateChanged
 } from "firebase/auth";
 import {
   getFirestore,
@@ -234,6 +235,31 @@ export const logoutUser = async () => {
   }
   await signOut(auth);
   return true;
+};
+
+// Escucha los cambios reales de sesión de Firebase (login, logout, cambio de
+// cuenta, expiración) y notifica con el usuario actual o null. Esta es la
+// única fuente de verdad de "quién tiene la sesión activa": el Context de
+// React debe reflejar esto, nunca asumirlo a partir de una copia guardada.
+export const subscribeToAuthChanges = (callback) => {
+  if (isMock || !auth) {
+    // En modo mock no hay sesión persistente real de Firebase que observar.
+    return () => {};
+  }
+  return onAuthStateChanged(auth, async (firebaseUser) => {
+    if (!firebaseUser) {
+      callback(null);
+      return;
+    }
+    const token = await firebaseUser.getIdToken();
+    callback({
+      uid: firebaseUser.uid,
+      displayName: firebaseUser.displayName,
+      email: firebaseUser.email,
+      photoURL: firebaseUser.photoURL,
+      token
+    });
+  });
 };
 
 // Obtener token JWT actual
