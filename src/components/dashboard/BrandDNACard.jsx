@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { AlertCircle } from 'lucide-react';
 import { getOnboarding, updateOnboarding } from '../../services/api';
 import { archetypeDisplay } from '../../mocks/data';
+import { useApp } from '../../context/AppContext';
 import RefineDnaDrawer from './RefineDnaDrawer';
 
 /**
@@ -23,14 +24,18 @@ import RefineDnaDrawer from './RefineDnaDrawer';
  * @property {string} emocion_objetivo
  */
 
-function Pill({ label, value }) {
+function DnaBlock({ label, value }) {
+  const isTruncated = value && value.length > 140;
+  const displayText = isTruncated ? `${value.slice(0, 137)}...` : value;
+
   return (
-    <div
-      title={value}
-      className="max-w-[180px] bg-butter text-charcoal rounded-pill px-4 py-2 text-xs"
-    >
-      <span className="font-semibold">{label}: </span>
-      <span className="truncate inline-block max-w-[110px] align-bottom">{value}</span>
+    <div className="flex flex-col gap-1" title={isTruncated ? value : undefined}>
+      <span className="text-[10px] font-sans font-bold uppercase tracking-wider text-gray-warm-500">
+        {label}
+      </span>
+      <p className="text-sm text-cream font-sans leading-relaxed m-0">
+        {displayText || 'Sin definir'}
+      </p>
     </div>
   );
 }
@@ -78,6 +83,7 @@ export default function BrandDNACard({ className = '' }) {
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState('');
   const nav = useNavigate();
+  const { brand, updateBrand } = useApp();
 
   const fetchOnboarding = async () => {
     try {
@@ -88,7 +94,8 @@ export default function BrandDNACard({ className = '' }) {
       if (err.status === 404) {
         setStatus('not_onboarded');
       } else {
-        setErrorMessage(err.message || 'No se pudo cargar tu ADN de marca.');
+        const isNetworkError = err.message === 'Failed to fetch' || err.name === 'TypeError';
+        setErrorMessage(isNetworkError ? 'No pudimos conectar con el servidor. Verifica que el backend esté corriendo.' : (err.message || 'No se pudo cargar tu ADN de marca.'));
         setStatus('error');
       }
     }
@@ -115,8 +122,26 @@ export default function BrandDNACard({ className = '' }) {
     const merged = { ...data, ...fields };
     setSaving(true);
     try {
+      // 1. Guardar en Firestore a través de la API (servidor FastAPI + base de datos Firebase)
       await updateOnboarding(merged);
       setData(merged);
+
+      // 2. Espejear a localStorage para que el saludo del header y los estilos generales de la app sigan funcionando
+      // TODO: post-hackathon: replace localStorage with AppContext as single source of truth
+      const updatedLocalBrand = {
+        ...brand,
+        name: merged.name || brand.name,
+        service: merged.nicho_negocio || brand.service,
+        location: merged.ubicacion || brand.location,
+        primary: merged.color_hex || brand.primary,
+        secondary: merged.secondary_color || brand.secondary,
+        language: merged.language || brand.language,
+        audiences: merged.audiences || brand.audiences,
+        // También guardamos el arquetipo en local por si acaso
+        arquetipo_marca: merged.arquetipo_marca
+      };
+      updateBrand(updatedLocalBrand);
+
       setDrawerOpen(false);
     } catch (err) {
       setToast(err.message || 'No se pudo guardar tu ADN de marca. Intenta de nuevo.');
@@ -168,39 +193,46 @@ export default function BrandDNACard({ className = '' }) {
   const archetype = archetypeDisplay[data.arquetipo_marca] || { title: data.arquetipo_marca, description: '' };
 
   return (
-    <div className={`relative bg-charcoal rounded-card p-8 flex flex-col justify-between overflow-hidden ${className}`}>
-      <div className="relative z-10">
-        <span className="text-xs font-semibold uppercase tracking-wide text-gray-warm-500">
-          Tu ADN de marca
-        </span>
+    <div className={`relative bg-charcoal rounded-card p-8 flex flex-col justify-between gap-8 overflow-hidden ${className}`}>
+      <div className="relative z-10 flex flex-col gap-6">
+        <div>
+          <span className="text-xs font-semibold uppercase tracking-wide text-gray-warm-500">
+            Tu ADN de marca
+          </span>
+          <h2 className="font-display text-4xl md:text-5xl font-semibold text-hero mt-3 leading-tight">
+            {archetype.title}
+          </h2>
+          <p className="font-sans text-cream/95 mt-2 max-w-md text-sm leading-relaxed">
+            {archetype.description}
+          </p>
+        </div>
 
-        <h2 className="font-display text-4xl md:text-5xl font-semibold text-hero mt-3 leading-tight">
-          {archetype.title}
-        </h2>
-        <p className="font-sans text-cream/90 mt-2 max-w-md">
-          {archetype.description}
-        </p>
-
-        <div className="flex flex-wrap gap-2 mt-6">
-          <Pill label="Propósito" value={data.proposito_marca} />
-          <Pill label="Enemigo" value={data.enemigo_marca} />
-          <Pill label="Tono" value={data.tono_voz} />
+        <div className="flex flex-col gap-4">
+          <DnaBlock label="Propósito de marca" value={data.proposito_marca} />
+          <DnaBlock label="Enemigo de marca" value={data.enemigo_marca} />
+          <DnaBlock label="Tono de voz" value={data.tono_voz} />
         </div>
       </div>
 
-      <div className="relative z-10 flex items-center justify-between mt-8">
+      <div className="relative z-10 flex items-center justify-between mt-auto pt-4 border-t border-cream/10">
         <div className="flex items-center gap-2">
           <span
-            className="w-6 h-6 rounded-full border border-cream/30"
+            className="w-6 h-6 rounded-full border border-cream/30 shadow-sm cursor-help"
             style={{ backgroundColor: data.color_hex }}
-            title={data.color_hex}
+            title={`Principal: ${data.color_hex}`}
           />
-          <code className="text-xs text-gray-warm-500 font-sans">{data.color_hex}</code>
+          {data.secondary_color && (
+            <span
+              className="w-6 h-6 rounded-full border border-cream/30 shadow-sm cursor-help"
+              style={{ backgroundColor: data.secondary_color }}
+              title={`Secundario: ${data.secondary_color}`}
+            />
+          )}
         </div>
 
         <button
           onClick={() => setDrawerOpen(true)}
-          className="rounded-pill border border-gray-warm-500/40 text-gray-warm-500 font-sans text-xs font-semibold px-4 py-2 hover:text-cream hover:border-cream/50 transition"
+          className="rounded-pill bg-transparent border border-cream/40 text-cream font-sans text-xs font-semibold px-4 py-2 hover:bg-cream/10 transition"
         >
           Refinar mi ADN
         </button>
