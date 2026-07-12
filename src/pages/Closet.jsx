@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ArrowLeft, ArrowRight, Check, Lock, Shuffle, Sparkles, Unlock, Save, Download } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import {
   categoryDefs,
   closetRecommendations,
@@ -41,6 +41,7 @@ export default function Closet() {
     saveDesign
   } = useApp();
   const nav = useNavigate();
+  const location = useLocation();
 
   const [stage, setStage] = useState('recommendation');
   const [formatIndex, setFormatIndex] = useState(Math.max(0, formats.findIndex(f => f.id === project.format)));
@@ -118,8 +119,11 @@ export default function Closet() {
     }
   };
 
-  // Estados locales para la generación por IA
-  const [idea, setIdea] = useState("Lanzamiento de croissants de chocolate calientes los domingos");
+  // Estados locales para la generación por IA. Si venimos del
+  // OpportunityRadarCard, precargamos su sugerencia como inspiración.
+  const [idea, setIdea] = useState(
+    location.state?.inspiration || "Lanzamiento de croissants de chocolate calientes los domingos"
+  );
   const [objective, setObjective] = useState("Vender");
   const [loading, setLoading] = useState(false);
   const [loadingMsg, setLoadingMsg] = useState("");

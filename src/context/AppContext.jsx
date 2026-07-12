@@ -24,7 +24,10 @@ const initialProject = {
 };
 
 export function AppProvider({ children }) {
-  const [brand, setBrand] = useState(() => JSON.parse(localStorage.getItem('cc-brand') || 'null') || defaultBrand);
+  const [brand, setBrand] = useState(() => ({
+    ...defaultBrand,
+    ...(JSON.parse(localStorage.getItem('cc-brand') || 'null') || {})
+  }));
   const [project, setProject] = useState(initialProject); 
   const [images, setImages] = useState(mockImages.slice(0, 2));
   const [user, setUser] = useState(() => JSON.parse(sessionStorage.getItem('cc-user') || 'null'));

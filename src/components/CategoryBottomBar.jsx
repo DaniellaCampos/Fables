@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { categoryDefs } from '../mocks/data';
 import '../styles/category-bottom-bar.css';
 
@@ -21,6 +21,21 @@ export default function CategoryBottomBar({
     }
   }, [activeIndex]);
 
+<<<<<<< HEAD
+  const handleKeyDown = useCallback((e) => {
+    if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)) return;
+
+    if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      onCategoryChange((activeIndex - 1 + categoryDefs.length) % categoryDefs.length);
+    } else if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      onCategoryChange((activeIndex + 1) % categoryDefs.length);
+    }
+  }, [activeIndex, onCategoryChange]);
+
+=======
+>>>>>>> c2471e4408648b93d01835e38ccce201455e02ed
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)) return;
@@ -36,7 +51,7 @@ export default function CategoryBottomBar({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [activeIndex, onCategoryChange]);
+  }, [handleKeyDown]);
 
   return (
     <div className="category-bottom-bar">
