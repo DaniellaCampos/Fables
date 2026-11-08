@@ -3,7 +3,7 @@
 **Responsable:** Daniela
 **Fechas:** 12 - 18 oct (hecha el 7 nov por el atraso del relevo)
 **Rama:** `semana-3`
-**PR:** #[pendiente]
+**PR:** #8
 
 ## Qué terminé
 - Moví los mockups de Stitch a `docs/diseno/`:
