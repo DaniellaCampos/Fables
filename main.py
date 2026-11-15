@@ -90,12 +90,12 @@ async def guardar_onboarding(datos: OnboardingData, usuario: dict = Depends(veri
         # Guardar en Firestore de forma asíncrona para no bloquear el event loop.
         # Usamos merge=True para que las actualizaciones parciales no borren campos previos.
         doc_ref = db.collection("usuarios").document(uid)
-        await anyio.to_thread.run_sync(functools.partial(doc_ref.set, datos.dict(), merge=True))
+        await anyio.to_thread.run_sync(functools.partial(doc_ref.set, datos.model_dump(), merge=True))
 
         # Sincronización fire-and-forget a HubSpot CRM (Fase 2)
         try:
             from services.hubspot_service import sync_brand_to_hubspot
-            await anyio.to_thread.run_sync(sync_brand_to_hubspot, datos.dict(), usuario.get("email"))
+            await anyio.to_thread.run_sync(sync_brand_to_hubspot, datos.model_dump(), usuario.get("email"))
         except Exception as hs_err:
             print(f"HubSpot background trigger failed: {hs_err}")
 
@@ -175,7 +175,7 @@ async def log_opportunity_action(datos: OpportunityActionLog, usuario: dict = De
         raise HTTPException(status_code=500, detail="Servicio de base de datos no disponible")
 
     uid = usuario["uid"]
-    log_dict = datos.dict()
+    log_dict = datos.model_dump()
     log_dict["user_id"] = uid
     # This data feeds the future ML forecasting model (Level 2/3 roadmap).
 
@@ -265,7 +265,7 @@ async def guardar_diseno(datos: DesignData, usuario: dict = Depends(verificar_to
         raise HTTPException(status_code=500, detail="Servicio de base de datos no disponible")
     
     uid = usuario["uid"]
-    diseno_dict = datos.dict()
+    diseno_dict = datos.model_dump()
     diseno_dict["uid"] = uid
     diseno_dict["createdAt"] = datetime.now(timezone.utc).isoformat()
     
