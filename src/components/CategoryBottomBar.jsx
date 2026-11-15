@@ -35,7 +35,7 @@ export default function CategoryBottomBar({
   useEffect(() => {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [activeIndex, onCategoryChange]);
+  }, [handleKeyDown]);
 
   return (
     <div className="category-bottom-bar">

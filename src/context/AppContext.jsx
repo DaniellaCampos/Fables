@@ -1,4 +1,4 @@
-import { createContext, useContext, useMemo, useState, useEffect, useRef } from 'react';
+import { createContext, useContext, useMemo, useState, useEffect, useRef, useCallback } from 'react';
 import { defaultBrand, mockImages } from '../mocks/data';
 import {
   loginWithGoogle,
@@ -125,12 +125,12 @@ export function AppProvider({ children }) {
     localStorage.setItem(imagesKey(user.uid), JSON.stringify(images));
   }, [images, user]);
 
-  const updateBrand = (next) => {
+  const updateBrand = useCallback((next) => {
     setBrand(next);
     if (user?.uid) {
       localStorage.setItem(brandKey(user.uid), JSON.stringify(next));
     }
-  };
+  }, [user]);
 
   const login = async () => {
     try {
@@ -165,7 +165,7 @@ export function AppProvider({ children }) {
     }
   };
 
-  const saveDesign = async (designName, dataUrl) => {
+  const saveDesign = useCallback(async (designName, dataUrl) => {
     // Get currently selected image URL
     const activeImage = images[project.selectedImage] || images[0];
 
@@ -187,7 +187,7 @@ export function AppProvider({ children }) {
       console.error("Error al guardar diseño en contexto:", error);
       throw error;
     }
-  };
+  }, [images, project, campaign]);
 
   const logout = async () => {
     try {
@@ -229,7 +229,7 @@ export function AppProvider({ children }) {
     setCampaign,
     unsplashImages,
     setUnsplashImages
-  }), [brand, project, images, user, authReady, savedDesigns, campaign, unsplashImages]);
+  }), [brand, updateBrand, project, images, user, authReady, savedDesigns, saveDesign, campaign, unsplashImages]);
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 }

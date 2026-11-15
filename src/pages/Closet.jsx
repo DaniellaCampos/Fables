@@ -161,7 +161,7 @@ export default function Closet() {
       setDesignName(nameVal);
       setProject(p => ({ ...p, name: nameVal }));
     }
-  }, [location.state?.inspiration]);
+  }, [location.state?.inspiration, setProject]);
 
   const [objective, setObjective] = useState(
     location.state?.objective || project.objective || "Vender"
